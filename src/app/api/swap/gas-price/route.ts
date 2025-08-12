@@ -47,10 +47,30 @@ interface OKXGasPriceResponse {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const chainId = searchParams.get('chainId') || '1'
+    const chainId = searchParams.get('chainId')
 
-    // Get gas prices based on chain
-    const gasPrice = await getGasPriceForChain(chainId)
+    if (!chainId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'chainId parameter is required'
+        },
+        { status: 400 }
+      )
+    }
+
+    const chainIndex = getChainIndex(chainId)
+    const gasPrice = await fetchOKXGasPrice(chainIndex)
+
+    if (!gasPrice) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to fetch gas price from OKX API'
+        },
+        { status: 503 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
@@ -61,127 +81,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Gas price API error:', error)
 
-    // Return default gas prices on error
-    return NextResponse.json({
-      success: false,
-      chainId: request.nextUrl.searchParams.get('chainId') || '1',
-      gasPrice: {
-        slow: '10',
-        average: '15',
-        fast: '20',
-        baseFee: '10'
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error'
       },
-      lastUpdated: new Date().toISOString()
-    })
+      { status: 500 }
+    )
   }
-}
-
-async function getGasPriceForChain(chainId: string): Promise<GasPrice> {
-  // Try to fetch real gas prices from OKX API first
-  try {
-    const chainIndex = getChainIndex(chainId)
-    const okxGasPrice = await fetchOKXGasPrice(chainIndex)
-    if (okxGasPrice) {
-      return okxGasPrice
-    }
-  } catch (error) {
-    console.error('Failed to fetch OKX gas price:', error)
-  }
-
-  // Fallback to reasonable estimates for each chain
-  const gasPrices: Record<string, GasPrice> = {
-    '1': {
-      // Ethereum
-      slow: '15',
-      average: '20',
-      fast: '30',
-      baseFee: '15',
-      priority: {
-        low: '1',
-        medium: '2',
-        high: '3'
-      }
-    },
-    '56': {
-      // BSC
-      slow: '3',
-      average: '5',
-      fast: '7',
-      baseFee: '3'
-    },
-    '137': {
-      // Polygon
-      slow: '30',
-      average: '50',
-      fast: '100',
-      baseFee: '30'
-    },
-    '42161': {
-      // Arbitrum
-      slow: '0.1',
-      average: '0.15',
-      fast: '0.2',
-      baseFee: '0.1'
-    },
-    '10': {
-      // Optimism
-      slow: '0.001',
-      average: '0.01',
-      fast: '0.05',
-      baseFee: '0.001'
-    },
-    '43114': {
-      // Avalanche
-      slow: '25',
-      average: '35',
-      fast: '50',
-      baseFee: '25'
-    },
-    '8453': {
-      // Base
-      slow: '0.001',
-      average: '0.01',
-      fast: '0.05',
-      baseFee: '0.001'
-    },
-    '250': {
-      // Fantom
-      slow: '10',
-      average: '20',
-      fast: '50',
-      baseFee: '10'
-    },
-    '324': {
-      // zkSync Era
-      slow: '0.05',
-      average: '0.1',
-      fast: '0.2',
-      baseFee: '0.05'
-    },
-    '59144': {
-      // Linea
-      slow: '0.1',
-      average: '0.5',
-      fast: '1',
-      baseFee: '0.1'
-    },
-    '534352': {
-      // Scroll
-      slow: '0.01',
-      average: '0.05',
-      fast: '0.1',
-      baseFee: '0.01'
-    }
-  }
-
-  return (
-    gasPrices[chainId] || {
-      slow: '10',
-      average: '15',
-      fast: '20',
-      baseFee: '10'
-    }
-  )
 }
 
 async function fetchOKXGasPrice(chainIndex: string): Promise<GasPrice | null> {
@@ -223,15 +130,17 @@ async function fetchOKXGasPrice(chainIndex: string): Promise<GasPrice | null> {
     })
 
     if (!response.ok) {
-      console.error('OKX API error:', response.status, response.statusText)
-      return null
+      throw new Error(
+        `OKX API error: ${response.status} ${response.statusText}`
+      )
     }
 
     const data: OKXGasPriceResponse = await response.json()
 
     if (data.code !== '0' || !data.data || data.data.length === 0) {
-      console.error('OKX API returned error:', data.msg)
-      return null
+      throw new Error(
+        `OKX API returned error: ${data.msg || 'No data available'}`
+      )
     }
 
     const gasPriceData = data.data[0]
@@ -276,9 +185,9 @@ async function fetchOKXGasPrice(chainIndex: string): Promise<GasPrice | null> {
       }
     }
 
-    return null
+    throw new Error('Invalid gas price data format from OKX API')
   } catch (error) {
     console.error('Failed to fetch OKX gas price:', error)
-    return null
+    throw error
   }
 }
