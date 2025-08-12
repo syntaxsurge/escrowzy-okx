@@ -1,28 +1,4 @@
-let eslintPluginNext
-try {
-  // Try to import the specific path first (for compatibility)
-  eslintPluginNext = await import('@next/eslint-plugin-next/dist/index.js')
-  eslintPluginNext = eslintPluginNext.default || eslintPluginNext
-} catch {
-  try {
-    // Fallback to the package root
-    eslintPluginNext = await import('@next/eslint-plugin-next')
-    eslintPluginNext = eslintPluginNext.default || eslintPluginNext
-  } catch {
-    // If both fail, create a minimal plugin object
-    console.warn(
-      'Could not load @next/eslint-plugin-next, using minimal configuration'
-    )
-    eslintPluginNext = {
-      configs: {
-        'core-web-vitals': {
-          rules: {}
-        }
-      }
-    }
-  }
-}
-
+import eslintPluginNext from '@next/eslint-plugin-next'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import typescriptParser from '@typescript-eslint/parser'
 import eslintConfigPrettier from 'eslint-config-prettier'
