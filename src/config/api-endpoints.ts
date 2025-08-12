@@ -250,29 +250,32 @@ export const apiEndpoints = {
     },
     okxDex: {
       baseUrl: 'https://web3.okx.com',
-      basePath: '/api/v5/dex',
+      basePath: '/api/v5',
       endpoints: {
         // Market endpoints
-        supportedChains: '/market/supported/chain',
-        marketPrice: '/market/price',
-        marketPriceInfo: '/market/price-info',
+        supportedChains: '/dex/market/supported/chain',
+        marketPrice: '/dex/market/price',
+        marketPriceInfo: '/dex/market/price-info',
 
         // Aggregator endpoints
-        quote: '/aggregator/quote',
-        swap: '/aggregator/swap',
-        allTokens: '/aggregator/all-tokens',
-        liquiditySources: '/aggregator/get-liquidity',
-        approveTransaction: '/aggregator/approve-transaction',
-        tokenSearch: '/aggregator/token-search',
-        chainInfo: '/aggregator/chain-info',
+        quote: '/dex/aggregator/quote',
+        swap: '/dex/aggregator/swap',
+        allTokens: '/dex/aggregator/all-tokens',
+        liquiditySources: '/dex/aggregator/get-liquidity',
+        approveTransaction: '/dex/aggregator/approve-transaction',
+        tokenSearch: '/dex/aggregator/token-search',
+        chainInfo: '/dex/aggregator/chain-info',
 
         // Balance endpoints
-        balance: '/balance/token-balance',
-        balanceAll: '/balance/all-token-balances-by-address',
+        balance: '/dex/balance/token-balance',
+        balanceAll: '/dex/balance/all-token-balances-by-address',
 
         // Transaction history endpoints
-        txHistory: '/tx-history/address/transaction-list',
-        txStatus: '/tx-history/transaction/status'
+        txHistory: '/dex/tx-history/address/transaction-list',
+        txStatus: '/dex/tx-history/transaction/status',
+
+        // Gas price endpoint
+        gasPrice: '/wallet/pre-transaction/gas-price'
       }
     }
   },
