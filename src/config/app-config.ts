@@ -32,5 +32,14 @@ export const appConfig = {
   // Media configuration
   media: {
     placeholderVideoUrl: 'https://www.youtube.com/embed/xxxxxxx'
+  },
+
+  // Token assets configuration
+  tokenAssets: {
+    defaultEthLogo: 'https://token-icons.s3.amazonaws.com/eth.png',
+    // Additional token logos can be added here as needed
+    logos: {
+      ETH: 'https://token-icons.s3.amazonaws.com/eth.png'
+    }
   }
 }

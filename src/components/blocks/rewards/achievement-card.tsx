@@ -9,6 +9,7 @@ import { Lock, Check, ExternalLink } from 'lucide-react'
 import { RARITY_COLORS } from '@/config/rewards'
 import type { Achievement, Rarity } from '@/config/rewards'
 import { cn } from '@/lib'
+import { buildTxUrl, DEFAULT_CHAIN_ID } from '@/lib/blockchain'
 
 interface AchievementCardProps {
   achievement: Achievement & {
@@ -148,7 +149,7 @@ export function AchievementCard({
                 <span className='text-muted-foreground text-xs'>NFT:</span>
                 {achievement.nft ? (
                   <a
-                    href={`https://etherscan.io/tx/${achievement.nft.txHash}`}
+                    href={buildTxUrl(DEFAULT_CHAIN_ID, achievement.nft.txHash)}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='text-primary flex items-center gap-1 text-xs font-bold hover:underline'

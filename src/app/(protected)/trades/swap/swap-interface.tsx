@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { appConfig } from '@/config/app-config'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useSwap } from '@/hooks/use-swap'
 import { useTokenBalances } from '@/hooks/use-token-balances'
@@ -104,7 +105,7 @@ export function SwapInterface() {
       balance: nativeBalanceStr,
       balanceUsd:
         nativeBalanceNum > 0 ? (nativeBalanceNum * 3500).toFixed(2) : '0',
-      logo: 'https://token-icons.s3.amazonaws.com/eth.png',
+      logo: appConfig.tokenAssets.defaultEthLogo,
       price: 3500
     })
 

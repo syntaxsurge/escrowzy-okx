@@ -31,7 +31,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { apiEndpoints } from '@/config/api-endpoints'
 import { refreshIntervals, appRoutes } from '@/config/app-routes'
+import { envPublic } from '@/config/env.public'
 import { cn } from '@/lib'
 
 interface CodeExample {
@@ -257,7 +259,7 @@ export default function ApiDocsPage() {
       codeExamples: [
         {
           language: 'JavaScript',
-          code: `const response = await fetch('https://api.yourapp.com/api/v1/escrow/create', {
+          code: `const response = await fetch('${envPublic.NEXT_PUBLIC_APP_URL}${apiEndpoints.v1.escrow.create}', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -279,7 +281,7 @@ console.log(data);`
           code: `import requests
 
 response = requests.post(
-    'https://api.yourapp.com/api/v1/escrow/create',
+    '${envPublic.NEXT_PUBLIC_APP_URL}${apiEndpoints.v1.escrow.create}',
     headers={
         'Authorization': 'Bearer YOUR_API_KEY',
         'Content-Type': 'application/json'
@@ -297,7 +299,7 @@ print(data)`
         },
         {
           language: 'cURL',
-          code: `curl -X POST https://api.yourapp.com/api/v1/escrow/create \\
+          code: `curl -X POST ${envPublic.NEXT_PUBLIC_APP_URL}${apiEndpoints.v1.escrow.create} \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -547,7 +549,7 @@ print(data)`
                     </p>
                     <CodeBlock
                       code={`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  https://api.yourapp.com/api/v1/escrow/list`}
+  ${envPublic.NEXT_PUBLIC_APP_URL}${apiEndpoints.v1.escrow.list}`}
                       language='bash'
                       onCopy={() => {}}
                     />
