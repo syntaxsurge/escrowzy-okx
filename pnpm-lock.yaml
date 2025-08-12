@@ -267,6 +267,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
+      '@next/eslint-plugin-next':
+        specifier: ^15.4.6
+        version: 15.4.6
       '@types/canvas-confetti':
         specifier: ^1.9.0
         version: 1.9.0
@@ -1102,6 +1105,9 @@ packages:
 
   '@next/eslint-plugin-next@15.1.0':
     resolution: {integrity: sha512-+jPT0h+nelBT6HC9ZCHGc7DgGVy04cv4shYdAe6tKlEbjQUtwU3LzQhzbDHQyY2m6g39m6B0kOFVuLGBrxxbGg==}
+
+  '@next/eslint-plugin-next@15.4.6':
+    resolution: {integrity: sha512-2NOu3ln+BTcpnbIDuxx6MNq+pRrCyey4WSXGaJIyt0D2TYicHeO9QrUENNjcf673n3B1s7hsiV5xBYRCK1Q8kA==}
 
   '@next/swc-darwin-arm64@15.4.0-canary.47':
     resolution: {integrity: sha512-3iXXKsvKM85Gge74NHu2LrwPtwVi3AIitY7RPp2Qa7XqCkKMZuxiTCQkhjseE7oEI7qDHoq0glFGcG7S4oislA==}
@@ -7324,6 +7330,10 @@ snapshots:
   '@next/env@15.4.0-canary.47': {}
 
   '@next/eslint-plugin-next@15.1.0':
+    dependencies:
+      fast-glob: 3.3.1
+
+  '@next/eslint-plugin-next@15.4.6':
     dependencies:
       fast-glob: 3.3.1
 

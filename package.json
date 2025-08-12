@@ -108,6 +108,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@next/eslint-plugin-next": "^15.4.6",
     "@types/canvas-confetti": "^1.9.0",
     "@types/js-yaml": "^4.0.9",
     "@types/module-alias": "^2.0.4",
