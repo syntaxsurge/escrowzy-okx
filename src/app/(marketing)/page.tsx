@@ -45,7 +45,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { appConfig } from '@/config/app-config'
 import { appRoutes } from '@/config/app-routes'
 import { envPublic } from '@/config/env.public'
 import { ACHIEVEMENTS } from '@/config/rewards'
@@ -251,7 +250,7 @@ export default function HomePage() {
               </Badge>
 
               <h1 className='mb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-yellow-400 bg-clip-text text-5xl font-black tracking-tight text-transparent sm:text-7xl lg:text-8xl'>
-                {appConfig.name.toUpperCase()} ARENA
+                {envPublic.NEXT_PUBLIC_APP_NAME.toUpperCase()} ARENA
               </h1>
 
               <p className='mx-auto mb-8 max-w-3xl text-xl text-gray-300 sm:text-2xl'>

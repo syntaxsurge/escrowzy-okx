@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
-import { appConfig } from '@/config/app-config'
 import { appRoutes } from '@/config/app-routes'
+import { envPublic } from '@/config/env.public'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -12,9 +12,11 @@ export function Footer() {
         <div className='grid grid-cols-1 gap-8 md:grid-cols-4'>
           {/* Brand Section */}
           <div className='space-y-3'>
-            <h3 className='text-lg font-semibold'>{appConfig.name}</h3>
+            <h3 className='text-lg font-semibold'>
+              {envPublic.NEXT_PUBLIC_APP_NAME}
+            </h3>
             <p className='text-muted-foreground text-sm'>
-              {appConfig.description}
+              {envPublic.NEXT_PUBLIC_APP_DESCRIPTION}
             </p>
           </div>
 
@@ -106,7 +108,8 @@ export function Footer() {
         <div className='mt-8 border-t border-gray-200 pt-8 dark:border-gray-800'>
           <div className='flex flex-col items-center justify-between space-y-4 text-center md:flex-row md:space-y-0 md:text-left'>
             <p className='text-muted-foreground text-sm'>
-              © {currentYear} {appConfig.name}. All rights reserved.
+              © {currentYear} {envPublic.NEXT_PUBLIC_APP_NAME}. All rights
+              reserved.
             </p>
             <p className='text-muted-foreground text-sm'>
               Built with blockchain technology for the decentralized future.

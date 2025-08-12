@@ -181,39 +181,6 @@ export const uploadConstants = {
   }
 } as const
 
-// Chat constants
-export const chatConstants = {
-  MAX_MESSAGE_LENGTH: 1000,
-  MAX_ATTACHMENTS: 5,
-  TYPING_INDICATOR_TIMEOUT: 3000, // 3 seconds
-  MESSAGE_EDIT_TIME_LIMIT: 15 * 60 * 1000, // 15 minutes
-  MESSAGE_DELETE_TIME_LIMIT: 60 * 60 * 1000, // 1 hour
-  CONTEXT_TYPES: {
-    TRADE: 'trade',
-    TEAM: 'team',
-    DIRECT: 'direct'
-  } as const
-} as const
-
-// Notification constants
-export const notificationConstants = {
-  TYPES: {
-    TRADE: 'trade',
-    BATTLE: 'battle',
-    REWARD: 'reward',
-    SYSTEM: 'system',
-    TEAM: 'team'
-  } as const,
-  PRIORITIES: {
-    LOW: 'low',
-    MEDIUM: 'medium',
-    HIGH: 'high',
-    URGENT: 'urgent'
-  } as const,
-  RETENTION_DAYS: 30,
-  MAX_PER_USER: 100
-} as const
-
 // Validation constants
 export const validationConstants = {
   MIN_USERNAME_LENGTH: 3,
@@ -227,20 +194,6 @@ export const validationConstants = {
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   USERNAME_REGEX: /^[a-zA-Z0-9_-]+$/,
   ETHEREUM_ADDRESS_REGEX: /^0x[a-fA-F0-9]{40}$/
-} as const
-
-// Queue constants
-export const queueConstants = {
-  MAX_RETRIES: 3,
-  RETRY_DELAY: 5000, // 5 seconds
-  MAX_QUEUE_SIZE: 1000,
-  PROCESSING_TIMEOUT: 30000, // 30 seconds
-  PRIORITY_LEVELS: {
-    LOW: 1,
-    NORMAL: 5,
-    HIGH: 10,
-    URGENT: 15
-  } as const
 } as const
 
 // Security constants
@@ -263,13 +216,19 @@ export const securityConstants = {
   } as const
 } as const
 
-// Cache constants
-export const cacheConstants = {
-  DEFAULT_TTL: 5 * 60, // 5 minutes in seconds
-  USER_TTL: 10 * 60, // 10 minutes in seconds
-  TRADE_TTL: 1 * 60, // 1 minute in seconds
-  LISTING_TTL: 5 * 60, // 5 minutes in seconds
-  PRICE_TTL: 30, // 30 seconds
-  STATS_TTL: 15 * 60, // 15 minutes in seconds
-  REDIS_KEY_PREFIX: 'escrowzy:'
+// Server configuration
+export const serverConfig = {
+  defaultHost: 'localhost:3000',
+  defaultProtocol: 'http' as const,
+  developmentUrl: 'http://localhost:3000',
+  localhostIp: '127.0.0.1'
+} as const
+
+// Email configuration
+export const emailConfig = {
+  defaultFrom: 'noreply@escrowzy.com',
+  supportEmail: 'support@escrowzy.com',
+  adminEmail: 'admin@escrowzy.com',
+  // For seed data only
+  testEmail: 'pending@example.com'
 } as const

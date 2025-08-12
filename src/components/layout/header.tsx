@@ -31,8 +31,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Spinner } from '@/components/ui/spinner'
 import { apiEndpoints } from '@/config/api-endpoints'
-import { appConfig } from '@/config/app-config'
 import { appRoutes } from '@/config/app-routes'
+import { envPublic } from '@/config/env.public'
 import { useUnifiedWalletInfo } from '@/context'
 import { useUnifiedWalletAuth } from '@/hooks/blockchain/use-unified-wallet-auth'
 import { useDialogState } from '@/hooks/use-dialog-state'
@@ -447,14 +447,14 @@ export default function Header() {
           <div className='relative'>
             <Image
               src={appRoutes.assets.logo}
-              alt={appConfig.name}
+              alt={envPublic.NEXT_PUBLIC_APP_NAME}
               width={40}
               height={40}
               className='rounded-lg shadow-md transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg'
             />
           </div>
           <span className='from-foreground to-muted-foreground hidden bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent sm:block'>
-            {appConfig.name}
+            {envPublic.NEXT_PUBLIC_APP_NAME}
           </span>
         </Link>
 

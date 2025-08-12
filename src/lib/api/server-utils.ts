@@ -1,7 +1,7 @@
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-import { appConfig } from '@/config/app-config'
+import { serverConfig } from '@/config/business-constants'
 import { envPublic } from '@/config/env.public'
 import { envServer } from '@/config/env.server'
 
@@ -20,7 +20,7 @@ interface ServerFetchOptions extends Omit<RequestInit, 'headers'> {
  */
 async function getServerUrl(): Promise<string> {
   const headersList = await headers()
-  const host = headersList.get('host') || appConfig.server.defaultHost
+  const host = headersList.get('host') || serverConfig.defaultHost
 
   if (envPublic.NEXT_PUBLIC_APP_URL) {
     return envPublic.NEXT_PUBLIC_APP_URL
@@ -37,9 +37,9 @@ async function getServerUrl(): Promise<string> {
     headersList.get('x-forwarded-port') === '443' ||
     (!forwardedProto &&
       !host.includes('localhost') &&
-      !host.includes(appConfig.server.localhostIp))
+      !host.includes(serverConfig.localhostIp))
 
-  const protocol = isSecure ? 'https' : appConfig.server.defaultProtocol
+  const protocol = isSecure ? 'https' : serverConfig.defaultProtocol
   return `${protocol}://${forwardedHost}`
 }
 

@@ -67,7 +67,8 @@ const ThirdwebConnectButton = dynamic(
               label: 'Sign in'
             }}
             appMetadata={{
-              name: require('@/config/app-config').appConfig.name,
+              name: require('@/config/env.public').envPublic
+                .NEXT_PUBLIC_APP_NAME,
               url: typeof window !== 'undefined' ? window.location.origin : ''
             }}
           />
@@ -133,7 +134,8 @@ const ThirdwebConnectButtonNoAuto = dynamic(
               label: 'Sign in'
             }}
             appMetadata={{
-              name: require('@/config/app-config').appConfig.name,
+              name: require('@/config/env.public').envPublic
+                .NEXT_PUBLIC_APP_NAME,
               url: typeof window !== 'undefined' ? window.location.origin : ''
             }}
           />

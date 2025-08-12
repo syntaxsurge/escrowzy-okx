@@ -230,12 +230,6 @@ export const apiEndpoints = {
     cleanup: '/api/queue/cleanup',
     stats: '/api/queue/stats'
   },
-  sessionKeys: {
-    create: '/api/session-keys/create',
-    list: '/api/session-keys/list',
-    revoke: '/api/session-keys/revoke',
-    validate: '/api/session-keys/validate'
-  },
   v1: {
     escrow: {
       create: '/api/v1/escrow/create',

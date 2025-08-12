@@ -13,7 +13,6 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 import { WagmiProvider, createStorage } from 'wagmi'
 
-import { appConfig } from '@/config/app-config'
 import { envPublic } from '@/config/env.public'
 import { SUPPORTED_CHAIN_IDS, getViemChain } from '@/lib/blockchain'
 
@@ -46,7 +45,7 @@ const customDarkTheme = darkTheme({
 // Custom storage that persists chain and connection state
 const storage = createStorage({
   storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  key: `${appConfig.name}-wagmi`
+  key: `${envPublic.NEXT_PUBLIC_APP_NAME}-wagmi`
 })
 
 // Initialize config outside of component to avoid re-creation
@@ -63,7 +62,7 @@ const getWagmiConfig = () => {
   )
 
   return getDefaultConfig({
-    appName: appConfig.name,
+    appName: envPublic.NEXT_PUBLIC_APP_NAME,
     projectId,
     chains: viemChains as any,
     ssr: true,

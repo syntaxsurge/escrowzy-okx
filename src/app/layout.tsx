@@ -6,13 +6,13 @@ import { SWRConfig } from 'swr'
 
 import { DatabaseHealthCheck } from '@/components/blocks/health/database-health-check'
 import { Providers } from '@/components/providers'
-import { appConfig } from '@/config/app-config'
 import { appRoutes } from '@/config/app-routes'
+import { envPublic } from '@/config/env.public'
 import { swrConfig } from '@/lib/api/swr'
 
 export const metadata: Metadata = {
-  title: appConfig.name,
-  description: appConfig.description,
+  title: envPublic.NEXT_PUBLIC_APP_NAME,
+  description: envPublic.NEXT_PUBLIC_APP_DESCRIPTION,
   icons: { icon: appRoutes.assets.favicon }
 }
 

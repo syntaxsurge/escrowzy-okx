@@ -4,15 +4,15 @@ import { MarkdownViewer } from '@/components/blocks/markdown-viewer'
 import { Footer } from '@/components/layout/footer'
 import Header from '@/components/layout/header'
 import { apiEndpoints } from '@/config/api-endpoints'
-import { appConfig } from '@/config/app-config'
+import { envPublic } from '@/config/env.public'
 import { formatDate } from '@/lib'
 import { serverFetch } from '@/lib/api/server-utils'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: `Privacy Policy | ${appConfig.name}`,
-  description: `Privacy Policy for ${appConfig.name}`
+  title: `Privacy Policy | ${envPublic.NEXT_PUBLIC_APP_NAME}`,
+  description: `Privacy Policy for ${envPublic.NEXT_PUBLIC_APP_NAME}`
 }
 
 async function getPrivacyContent() {

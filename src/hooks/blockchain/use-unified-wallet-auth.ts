@@ -8,8 +8,8 @@ import { getProfiles } from 'thirdweb/wallets/in-app'
 import { createSiweMessage } from 'viem/siwe'
 
 import { apiEndpoints } from '@/config/api-endpoints'
-import { appConfig } from '@/config/app-config'
 import { appRoutes } from '@/config/app-routes'
+import { envPublic } from '@/config/env.public'
 import { isWalletProvider, WalletProviders } from '@/config/wallet-provider'
 import { useBlockchain } from '@/context'
 import { disconnectWallet } from '@/hooks/blockchain/use-wallet-disconnect'
@@ -108,7 +108,7 @@ export function useUnifiedWalletAuth() {
       const message = createSiweMessage({
         domain: window.location.host,
         address: address as `0x${string}`,
-        statement: `Sign in to ${appConfig.name}`,
+        statement: `Sign in to ${envPublic.NEXT_PUBLIC_APP_NAME}`,
         uri: window.location.origin,
         version: '1',
         chainId: chainId || 1,
