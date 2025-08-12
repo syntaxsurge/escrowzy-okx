@@ -1,4 +1,4 @@
-import eslintPluginNext from '@next/eslint-plugin-next'
+import eslintPluginNext from '@next/eslint-plugin-next/dist/index.js'
 
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import typescriptParser from '@typescript-eslint/parser'

@@ -167,16 +167,3 @@ async function fetchEthereumGasPrice(): Promise<GasPrice | null> {
   // For now, return null to use fallback prices
   return null
 }
-
-// Helper function to estimate transaction cost
-export function estimateTransactionCost(
-  gasPrice: string,
-  gasLimit: number = 200000,
-  nativeTokenPrice: number = 3500
-): string {
-  const gasPriceInGwei = parseFloat(gasPrice)
-  const gasCostInEth = (gasPriceInGwei * gasLimit) / 1e9
-  const gasCostInUsd = gasCostInEth * nativeTokenPrice
-
-  return gasCostInUsd.toFixed(2)
-}
