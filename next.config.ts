@@ -1,6 +1,8 @@
 import moduleAlias from 'module-alias'
 import type { NextConfig } from 'next'
 
+import { envPublic } from '@/config/env.public'
+
 moduleAlias.addAlias('punycode', 'punycode/')
 
 const nextConfig: NextConfig = {
@@ -16,12 +18,15 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/demo-video',
-        destination: 'https://youtu.be/xxxxxxx',
+        destination:
+          envPublic.NEXT_PUBLIC_DEMO_VIDEO_URL || 'https://youtu.be/xxxxxxx',
         permanent: false
       },
       {
         source: '/pitch-deck',
-        destination: 'https://www.canva.com/design/xxxxxxx/view',
+        destination:
+          envPublic.NEXT_PUBLIC_PITCH_DECK_URL ||
+          'https://www.canva.com/design/xxxxxxx/view',
         permanent: false
       }
     ]

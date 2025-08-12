@@ -38,7 +38,11 @@ const PublicEnv = z.object({
   BLOCKCHAIN_CONFIG_PATH: z
     .string()
     .optional()
-    .default('./config/blockchains.yaml')
+    .default('./config/blockchains.yaml'),
+
+  // External Links
+  NEXT_PUBLIC_DEMO_VIDEO_URL: z.string().url().optional(),
+  NEXT_PUBLIC_PITCH_DECK_URL: z.string().url().optional()
 })
 
 // For client-side, Next.js needs explicit access to each env var for build-time replacement
@@ -60,7 +64,9 @@ const envVars =
           process.env.NEXT_PUBLIC_DOMAIN_ESCROW_EMAIL,
         NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
         NEXT_PUBLIC_PUSHER_CLUSTER: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
-        BLOCKCHAIN_CONFIG_PATH: process.env.BLOCKCHAIN_CONFIG_PATH
+        BLOCKCHAIN_CONFIG_PATH: process.env.BLOCKCHAIN_CONFIG_PATH,
+        NEXT_PUBLIC_DEMO_VIDEO_URL: process.env.NEXT_PUBLIC_DEMO_VIDEO_URL,
+        NEXT_PUBLIC_PITCH_DECK_URL: process.env.NEXT_PUBLIC_PITCH_DECK_URL
       }
     : process.env // Server-side: use full process.env
 

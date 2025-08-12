@@ -1,3 +1,5 @@
+import { appConfig } from '@/config/app-config'
+
 import { db } from '../drizzle'
 import { teams, teamMembers, teamInvitations } from '../schema'
 import type { User } from '../schema'
@@ -82,7 +84,7 @@ export async function seedTeams(users: {
   const invitationToken = crypto.randomUUID()
   await db.insert(teamInvitations).values({
     teamId: testTeam.id,
-    email: 'pending@example.com',
+    email: appConfig.email.testEmail,
     role: 'member',
     token: invitationToken,
     invitedByUserId: users.testUser1.id,

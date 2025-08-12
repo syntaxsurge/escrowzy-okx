@@ -1,4 +1,3 @@
-import { appConfig } from '@/config/app-config'
 import { listingConstants } from '@/config/business-constants'
 import { sendMessageAction } from '@/lib/actions/chat'
 import { buildTxUrl } from '@/lib/blockchain'
@@ -93,7 +92,7 @@ export async function sendPaymentConfirmedMessage(
         ? `Amount Released: ${formatCurrency(
             netAmount,
             trade.currency
-          )} (after ${feeAmount || appConfig.messages.defaultFeePercentage} ${appConfig.messages.defaultFeeText})`
+          )} (after ${feeAmount} platform fee)`
         : ''
     }\n\n🎉 Trade completed successfully!`
 

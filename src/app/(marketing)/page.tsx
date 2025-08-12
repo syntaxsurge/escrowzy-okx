@@ -47,6 +47,7 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { appConfig } from '@/config/app-config'
 import { appRoutes } from '@/config/app-routes'
+import { envPublic } from '@/config/env.public'
 import { ACHIEVEMENTS } from '@/config/rewards'
 import { cn } from '@/lib'
 
@@ -418,7 +419,11 @@ export default function HomePage() {
                 <div className='relative aspect-video w-full'>
                   <iframe
                     className='absolute inset-0 h-full w-full'
-                    src={appConfig.media.placeholderVideoUrl}
+                    src={
+                      envPublic.NEXT_PUBLIC_DEMO_VIDEO_URL
+                        ? `https://www.youtube.com/embed/${envPublic.NEXT_PUBLIC_DEMO_VIDEO_URL.split('/').pop()}`
+                        : 'https://www.youtube.com/embed/xxxxxxx'
+                    }
                     title='Escrowzy Demo - Gamified P2P Trading Platform'
                     frameBorder='0'
                     allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
