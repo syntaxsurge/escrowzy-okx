@@ -1,12 +1,16 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import yaml from 'js-yaml'
 
-import { scriptEnv } from '../src/config/env.scripts.js'
+// Get the directory of the current script
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Get config path from environment or use default
-const { blockchainConfig: configPath } = scriptEnv.getPaths()
+const configPath =
+  process.env.BLOCKCHAIN_CONFIG_PATH || './config/blockchains.yaml'
 
 let absolutePath
 

@@ -9,37 +9,75 @@ export const blockchainConfig: BlockchainConfig = {
     enterprise: 5
   },
   chains: {
-    etherlinkTestnet: {
-      chainId: 128123,
-      name: 'Etherlink Testnet',
-      rpcUrl: 'https://node.ghostnet.etherlink.com',
-      explorerUrl: 'https://testnet.explorer.etherlink.com',
-      logo: 'https://assets.coingecko.com/coins/images/976/standard/Tezos-logo.png',
+    baseSepolia: {
+      chainId: 84532,
+      name: 'Base Sepolia',
+      rpcUrl: 'https://sepolia.base.org',
+      explorerUrl: 'https://sepolia.basescan.org',
+      logo: 'https://raw.githubusercontent.com/base/brand-kit/eba9e730be34f8c9ae7f9a21f32cc6aafebe2ad1/logo/TheSquare/Digital/Base_square_blue.svg',
       nativeCurrency: {
-        name: 'Tezos',
-        symbol: 'XTZ',
+        name: 'Ethereum',
+        symbol: 'ETH',
         decimals: 18
       },
-      coingeckoId: 'tezos',
+      coingeckoId: 'ethereum',
       isTestnet: true,
       contractAddresses: {
-        subscriptionManager: '0x4AD722AEFf2D98ABB879aA4f7E907659263C3641',
-        escrowCore: '0x8b1B9DCa3dAc6A2fb0AE3518D1e33DC277fc7B25',
-        achievementNFT: '0xee946764766Fa09e54794F2a0aA3CB3A133e163E'
+        subscriptionManager: '',
+        escrowCore: '',
+        achievementNFT: ''
       }
     },
-    etherlink: {
-      chainId: 42793,
-      name: 'Etherlink',
-      rpcUrl: 'https://node.mainnet.etherlink.com',
-      explorerUrl: 'https://explorer.etherlink.com',
-      logo: 'https://assets.coingecko.com/coins/images/976/standard/Tezos-logo.png',
+    base: {
+      chainId: 8453,
+      name: 'Base',
+      rpcUrl: 'https://mainnet.base.org',
+      explorerUrl: 'https://basescan.org',
+      logo: 'https://raw.githubusercontent.com/base/brand-kit/eba9e730be34f8c9ae7f9a21f32cc6aafebe2ad1/logo/TheSquare/Digital/Base_square_blue.svg',
       nativeCurrency: {
-        name: 'Tezos',
-        symbol: 'XTZ',
+        name: 'Ethereum',
+        symbol: 'ETH',
         decimals: 18
       },
-      coingeckoId: 'tezos',
+      coingeckoId: 'ethereum',
+      isTestnet: false,
+      contractAddresses: {
+        subscriptionManager: '',
+        escrowCore: '',
+        achievementNFT: ''
+      }
+    },
+    xlayerTestnet: {
+      chainId: 195,
+      name: 'X Layer Testnet',
+      rpcUrl: 'https://testrpc.xlayer.tech',
+      explorerUrl: 'https://www.okx.com/web3/explorer/xlayer-test',
+      logo: 'https://static.okx.com/cdn/assets/imgs/243/230501A8E74482AB.png',
+      nativeCurrency: {
+        name: 'OKB',
+        symbol: 'OKB',
+        decimals: 18
+      },
+      coingeckoId: 'okb',
+      isTestnet: true,
+      contractAddresses: {
+        subscriptionManager: '',
+        escrowCore: '',
+        achievementNFT: ''
+      }
+    },
+    xlayer: {
+      chainId: 196,
+      name: 'X Layer',
+      rpcUrl: 'https://rpc.xlayer.tech',
+      explorerUrl: 'https://www.okx.com/web3/explorer/xlayer',
+      logo: 'https://static.okx.com/cdn/assets/imgs/243/230501A8E74482AB.png',
+      nativeCurrency: {
+        name: 'OKB',
+        symbol: 'OKB',
+        decimals: 18
+      },
+      coingeckoId: 'okb',
       isTestnet: false,
       contractAddresses: {
         subscriptionManager: '',
