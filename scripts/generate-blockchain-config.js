@@ -41,7 +41,7 @@ const config = {
     // Only include chains that are enabled (default to true if not specified)
     if (chain.enabled !== false) {
       // Remove the enabled field from the output
-      const { enabled, ...chainWithoutEnabled } = chain
+      const { enabled: _enabled, ...chainWithoutEnabled } = chain
       acc[key] = chainWithoutEnabled
     }
     return acc

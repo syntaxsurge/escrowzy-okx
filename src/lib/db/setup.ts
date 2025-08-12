@@ -5,7 +5,7 @@ import path from 'node:path'
 import readline from 'node:readline'
 import { promisify } from 'node:util'
 
-import { appConfig } from '@/config/app-config'
+import { serverConfig } from '@/config/business-constants'
 import { databaseConfig } from '@/config/database'
 
 const execAsync = promisify(exec)
@@ -109,7 +109,7 @@ async function writeEnvFile(envVars: Record<string, string>) {
 
 async function main() {
   const POSTGRES_URL = await getPostgresURL()
-  const BASE_URL = appConfig.server.developmentUrl
+  const BASE_URL = serverConfig.developmentUrl
   const AUTH_SECRET = generateAuthSecret()
 
   await writeEnvFile({
