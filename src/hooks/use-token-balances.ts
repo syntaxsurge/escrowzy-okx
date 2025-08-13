@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-import { NATIVE_TOKEN_ADDRESS } from 'thirdweb'
-
 import { apiEndpoints } from '@/config/api-endpoints'
 import { useUnifiedWalletInfo, useUnifiedChainInfo } from '@/context/blockchain'
 import type { OKXBalanceInfo, OKXTokenInfo } from '@/types/okx-dex'
@@ -14,6 +12,7 @@ export function useTokenBalances() {
 
   const [balances, setBalances] = useState<OKXBalanceInfo[]>([])
   const [popularTokens, setPopularTokens] = useState<OKXTokenInfo[]>([])
+  const [allTokens, setAllTokens] = useState<OKXTokenInfo[]>([])
   const [isLoadingBalances, setIsLoadingBalances] = useState(false)
   const [isLoadingTokens, setIsLoadingTokens] = useState(false)
 
@@ -43,51 +42,56 @@ export function useTokenBalances() {
     }
   }, [address, chainId])
 
-  // Fetch popular tokens
-  const fetchPopularTokens = useCallback(async () => {
+  // Fetch all available tokens
+  const fetchAllTokens = useCallback(async () => {
     if (!chainId) return
 
     setIsLoadingTokens(true)
     try {
-      const response = await fetch(apiEndpoints.swap.tokens, {
+      // First try to get all tokens
+      const allTokensResponse = await fetch(apiEndpoints.swap.allTokens, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chainId })
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        console.log(`Fetched ${data.tokens?.length || 0} tokens from API`)
+      let tokens: OKXTokenInfo[] = []
 
-        // Add native token if not present
-        const tokens = data.tokens || []
-        const hasNativeToken = tokens.some(
-          (t: any) =>
-            t.tokenContractAddress?.toLowerCase() === NATIVE_TOKEN_ADDRESS
-        )
-
-        if (!hasNativeToken && chainId) {
-          // Add native token based on chain
-          const nativeSymbol =
-            chainId === 56
-              ? 'BNB'
-              : chainId === 137
-                ? 'MATIC'
-                : chainId === 43114
-                  ? 'AVAX'
-                  : 'ETH'
-
-          tokens.unshift({
-            tokenContractAddress: NATIVE_TOKEN_ADDRESS,
-            tokenSymbol: nativeSymbol,
-            tokenName: nativeSymbol,
-            tokenDecimals: '18',
-            tokenLogoUrl: undefined
-          })
-        }
-
-        setPopularTokens(tokens)
+      if (allTokensResponse.ok) {
+        const allData = await allTokensResponse.json()
+        // Ensure tokens is an array
+        tokens = Array.isArray(allData.tokens) ? allData.tokens : []
+        console.log(`Fetched ${tokens.length} total tokens from all-tokens API`)
       }
+
+      // If all tokens failed or returned empty, try popular tokens
+      if (tokens.length === 0) {
+        const popularResponse = await fetch(apiEndpoints.swap.tokens, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chainId })
+        })
+
+        if (popularResponse.ok) {
+          const popularData = await popularResponse.json()
+          // Ensure tokens is an array
+          tokens = Array.isArray(popularData.tokens) ? popularData.tokens : []
+          console.log(`Fetched ${tokens.length} popular tokens as fallback`)
+        }
+      }
+
+      // Ensure tokens is an array before using array methods
+      if (!Array.isArray(tokens)) {
+        console.warn('Tokens is not an array, defaulting to empty array')
+        tokens = []
+      }
+
+      // Don't manually add native token - it should come from the API
+      // The API provides the native token with proper logo and details
+
+      setAllTokens(tokens)
+      // Set popular tokens to first 50 for quick access
+      setPopularTokens(tokens.slice(0, 50))
     } catch (error) {
       console.error('Failed to fetch tokens:', error)
     } finally {
@@ -164,12 +168,12 @@ export function useTokenBalances() {
   }, [fetchBalances])
 
   useEffect(() => {
-    fetchPopularTokens()
-  }, [fetchPopularTokens])
+    fetchAllTokens()
+  }, [fetchAllTokens])
 
   return {
     balances,
-    popularTokens,
+    popularTokens: allTokens.length > 0 ? allTokens : popularTokens, // Use all tokens if available
     isLoadingBalances,
     isLoadingTokens,
     fetchBalances,
@@ -178,7 +182,7 @@ export function useTokenBalances() {
     formatBalance,
     refetch: () => {
       fetchBalances()
-      fetchPopularTokens()
+      fetchAllTokens()
     }
   }
 }

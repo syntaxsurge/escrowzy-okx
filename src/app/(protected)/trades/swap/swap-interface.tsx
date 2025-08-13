@@ -38,6 +38,7 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { useSwap } from '@/hooks/use-swap'
 import { useTokenBalances } from '@/hooks/use-token-balances'
 import { cn } from '@/lib'
+import { getNativeCurrencySymbol, getChainConfig } from '@/lib/blockchain'
 import type { OKXTokenInfo } from '@/types/okx-dex'
 
 interface Token {
@@ -92,37 +93,13 @@ export function SwapInterface() {
     const tokenMap = new Map<string, Token>()
     const nativeTokenAddress = NATIVE_TOKEN_ADDRESS
 
-    // First, add native ETH
-    const nativeBalanceStr = nativeBalance
-      ? formatUnits(nativeBalance.value, nativeBalance.decimals)
-      : '0'
-    const nativeBalanceNum = parseFloat(nativeBalanceStr)
-
-    tokenMap.set(nativeTokenAddress.toLowerCase(), {
-      symbol: 'ETH',
-      name: 'Ethereum',
-      address: nativeTokenAddress,
-      decimals: 18,
-      balance: nativeBalanceStr,
-      balanceUsd:
-        nativeBalanceNum > 0 ? (nativeBalanceNum * 3500).toFixed(2) : '0',
-      logo: 'https://raw.githubusercontent.com/thirdweb-dev/chain-icons/main/ethereum.svg',
-      price: 3500
-    })
+    // Don't add native token here - let it come from the API
+    // The API will provide the proper native token with correct logo
 
     // Add all tokens from OKX popular list
     popularTokens.forEach(token => {
       if (!token.tokenContractAddress) return
       const addr = token.tokenContractAddress.toLowerCase()
-
-      // Skip if it's the native token (already added)
-      if (addr === nativeTokenAddress.toLowerCase()) {
-        const existing = tokenMap.get(addr)
-        if (existing && token.tokenLogoUrl) {
-          existing.logo = token.tokenLogoUrl
-        }
-        return
-      }
 
       tokenMap.set(addr, {
         symbol: token.tokenSymbol || 'UNKNOWN',
@@ -139,14 +116,44 @@ export function SwapInterface() {
     // Update with user's actual balances from OKX API
     balances.forEach(balance => {
       if (!balance.tokenContractAddress) {
-        // Handle native token when address is empty
+        // Handle native token when address is empty (OKX sometimes returns native without address)
         const existing = tokenMap.get(nativeTokenAddress.toLowerCase())
-        if (existing && balance.balance) {
-          existing.balance = balance.balance
-          existing.balanceUsd = balance.balanceUsd || '0'
+        if (existing) {
+          // Update existing native token
+          if (balance.balance) {
+            existing.balance = balance.balance
+            existing.balanceUsd = balance.balanceUsd || '0'
+          }
           if (balance.tokenPrice) {
             existing.price = parseFloat(balance.tokenPrice)
           }
+          if (balance.tokenLogo) {
+            existing.logo = balance.tokenLogo
+          }
+        } else {
+          // Add native token from balance data
+          const chainConfig = chainId ? getChainConfig(chainId) : null
+          const nativeSymbol =
+            balance.tokenSymbol ||
+            chainConfig?.nativeCurrency?.symbol ||
+            getNativeCurrencySymbol(chainId || 1)
+          const nativeName =
+            balance.tokenName ||
+            chainConfig?.nativeCurrency?.name ||
+            nativeSymbol
+
+          tokenMap.set(nativeTokenAddress.toLowerCase(), {
+            symbol: nativeSymbol,
+            name: nativeName,
+            address: nativeTokenAddress,
+            decimals: balance.tokenDecimals
+              ? parseInt(balance.tokenDecimals)
+              : 18,
+            balance: balance.balance || '0',
+            balanceUsd: balance.balanceUsd || '0',
+            logo: balance.tokenLogo || undefined,
+            price: balance.tokenPrice ? parseFloat(balance.tokenPrice) : 0
+          })
         }
         return
       }
@@ -156,12 +163,42 @@ export function SwapInterface() {
       // Handle native token balance update
       if (addr === nativeTokenAddress.toLowerCase()) {
         const existing = tokenMap.get(nativeTokenAddress.toLowerCase())
-        if (existing && balance.balance) {
-          existing.balance = balance.balance
-          existing.balanceUsd = balance.balanceUsd || '0'
+        if (existing) {
+          // Update existing native token with balance info
+          if (balance.balance) {
+            existing.balance = balance.balance
+            existing.balanceUsd = balance.balanceUsd || '0'
+          }
           if (balance.tokenPrice) {
             existing.price = parseFloat(balance.tokenPrice)
           }
+          if (balance.tokenLogo) {
+            existing.logo = balance.tokenLogo
+          }
+        } else {
+          // Add native token from balance if not in popularTokens
+          const chainConfig = chainId ? getChainConfig(chainId) : null
+          const nativeSymbol =
+            balance.tokenSymbol ||
+            chainConfig?.nativeCurrency?.symbol ||
+            getNativeCurrencySymbol(chainId || 1)
+          const nativeName =
+            balance.tokenName ||
+            chainConfig?.nativeCurrency?.name ||
+            nativeSymbol
+
+          tokenMap.set(nativeTokenAddress.toLowerCase(), {
+            symbol: nativeSymbol,
+            name: nativeName,
+            address: nativeTokenAddress,
+            decimals: balance.tokenDecimals
+              ? parseInt(balance.tokenDecimals)
+              : 18,
+            balance: balance.balance || '0',
+            balanceUsd: balance.balanceUsd || '0',
+            logo: balance.tokenLogo || undefined,
+            price: balance.tokenPrice ? parseFloat(balance.tokenPrice) : 0
+          })
         }
         return
       }
@@ -434,43 +471,67 @@ export function SwapInterface() {
     }
   }, [fromAmount])
 
-  // Set default tokens when available
+  // Set default tokens when available from API
   useEffect(() => {
-    if (availableTokens.length > 0 && !fromToken) {
-      // Try to set ETH/WETH as default from token and USDC/USDT as default to token
-      const eth = availableTokens.find(
-        t => t.symbol === 'ETH' || t.symbol === 'WETH'
-      )
-      const stable = availableTokens.find(
-        t => t.symbol === 'USDC' || t.symbol === 'USDT' || t.symbol === 'DAI'
+    if (availableTokens.length > 0 && chainId && !fromToken && !toToken) {
+      // Get native token symbol for current chain
+      const nativeSymbol = getNativeCurrencySymbol(chainId)
+
+      // Find native token - check by symbol or by being NATIVE_TOKEN_ADDRESS
+      const nativeToken = availableTokens.find(
+        t =>
+          t.symbol.toUpperCase() === nativeSymbol.toUpperCase() ||
+          t.address.toLowerCase() === NATIVE_TOKEN_ADDRESS.toLowerCase()
       )
 
-      // Set from token first
-      const defaultFrom = eth || availableTokens[0]
-      setFromToken(defaultFrom)
-
-      // Find a different token for to token
-      const defaultTo =
-        stable ||
-        availableTokens.find(
-          t => t.address.toLowerCase() !== defaultFrom?.address.toLowerCase()
+      if (nativeToken) {
+        console.log(
+          'Setting native token as from:',
+          nativeToken.symbol,
+          nativeToken.logo
         )
-
-      // Only set if we have different tokens
-      if (
-        defaultTo &&
-        defaultFrom &&
-        defaultTo.address.toLowerCase() !== defaultFrom.address.toLowerCase()
-      ) {
-        setToToken(defaultTo)
+        setFromToken(nativeToken)
       }
 
-      console.log('Default tokens set:', {
-        from: eth?.symbol || availableTokens[0]?.symbol,
-        to: stable?.symbol || availableTokens[1]?.symbol
-      })
+      // Find stable coins - prioritize USDC and USDT
+      const usdcToken = availableTokens.find(
+        t => t.symbol.toUpperCase() === 'USDC'
+      )
+      const usdtToken = availableTokens.find(
+        t => t.symbol.toUpperCase() === 'USDT'
+      )
+      const stableToken =
+        usdcToken ||
+        usdtToken ||
+        availableTokens.find(t =>
+          ['DAI', 'BUSD', 'TUSD'].includes(t.symbol.toUpperCase())
+        )
+
+      if (stableToken) {
+        console.log(
+          'Setting stable coin as to:',
+          stableToken.symbol,
+          stableToken.logo
+        )
+        setToToken(stableToken)
+      } else {
+        // If no stable coin found, select first non-native token
+        const alternativeToken = availableTokens.find(
+          t =>
+            t.address.toLowerCase() !== NATIVE_TOKEN_ADDRESS.toLowerCase() &&
+            (!nativeToken ||
+              t.address.toLowerCase() !== nativeToken.address.toLowerCase())
+        )
+        if (alternativeToken) {
+          console.log(
+            'Setting alternative token as to:',
+            alternativeToken.symbol
+          )
+          setToToken(alternativeToken)
+        }
+      }
     }
-  }, [availableTokens, fromToken])
+  }, [availableTokens, chainId, fromToken, toToken])
 
   const handleSwapTokens = () => {
     const temp = fromToken
@@ -890,7 +951,7 @@ export function SwapInterface() {
                 disabled={
                   isLoadingQuote || !fromAmount || parseFloat(fromAmount) === 0
                 }
-                className='h-12 w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-lg font-black shadow-lg transition-all hover:scale-105 hover:from-blue-700 hover:to-cyan-700'
+                className='h-12 w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-lg font-black text-white shadow-lg transition-all hover:scale-105 hover:from-blue-700 hover:to-cyan-700'
               >
                 {isLoadingQuote ? (
                   <>
@@ -1132,7 +1193,7 @@ export function SwapInterface() {
                 parseFloat(fromAmount) === 0 ||
                 !quoteFetched
               }
-              className='h-14 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-lg font-black shadow-lg transition-all hover:scale-105 hover:from-purple-700 hover:to-pink-700'
+              className='h-14 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-lg font-black text-white shadow-lg transition-all hover:scale-105 hover:from-purple-700 hover:to-pink-700'
             >
               {isExecutingSwap ? (
                 <>

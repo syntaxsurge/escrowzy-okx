@@ -174,7 +174,10 @@ export default function CreateListingPage() {
                       'font-bold',
                       option.available &&
                         option.badge === 'New' &&
-                        'bg-gradient-to-r from-purple-500 to-pink-500'
+                        'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
+                      option.available &&
+                        option.badge === 'Popular' &&
+                        'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
                     )}
                   >
                     {option.badge}
