@@ -469,6 +469,50 @@ export async function canUserCreateListing(
   return { canCreate: true }
 }
 
+// Delete a listing
+export async function deleteListing(
+  listingId: number,
+  userId: number
+): Promise<boolean> {
+  // Check if the listing belongs to the user and is not part of an active trade
+  const [listing] = await db
+    .select()
+    .from(escrowListings)
+    .where(
+      and(eq(escrowListings.id, listingId), eq(escrowListings.userId, userId))
+    )
+    .limit(1)
+
+  if (!listing) {
+    return false
+  }
+
+  // Check if there are any active trades for this listing
+  const activeTrades = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(trades)
+    .where(
+      and(
+        sql`${trades.metadata}->>'listingId' = ${listingId.toString()}`,
+        sql`${trades.status} NOT IN ('completed', 'cancelled', 'expired')`
+      )
+    )
+
+  if (activeTrades[0].count > 0) {
+    throw new Error('Cannot delete listing with active trades')
+  }
+
+  // Delete the listing
+  const result = await db
+    .delete(escrowListings)
+    .where(
+      and(eq(escrowListings.id, listingId), eq(escrowListings.userId, userId))
+    )
+    .returning()
+
+  return result.length > 0
+}
+
 // Get market statistics
 export async function getMarketStats(): Promise<{
   totalActiveListings: number

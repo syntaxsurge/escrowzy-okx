@@ -155,7 +155,8 @@ export const apiEndpoints = {
     marketStats: '/api/listings/market-stats',
     create: '/api/listings/create',
     byId: (id: string) => `/api/listings/${id}`,
-    accept: (id: string) => `/api/listings/${id}/accept`
+    accept: (id: string) => `/api/listings/${id}/accept`,
+    delete: (id: string) => `/api/listings/${id}/delete`
   },
   battles: {
     findMatch: '/api/battles/find-match',
