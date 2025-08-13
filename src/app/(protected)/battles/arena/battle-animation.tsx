@@ -615,9 +615,10 @@ export function BattleAnimation({
   // Start battle sequence
   useEffect(() => {
     const startBattle = async () => {
-      // Preparing phase
+      // Preparing phase - use consistent duration
+      // This should match the ROUND_SUMMARY_DISPLAY_TIME used in page.tsx
       await new Promise(resolve =>
-        setTimeout(resolve, BATTLE_CONFIG.BATTLE_PREPARING_DURATION)
+        setTimeout(resolve, BATTLE_CONFIG.ROUND_SUMMARY_DISPLAY_TIME)
       )
       setPhase('fighting')
 

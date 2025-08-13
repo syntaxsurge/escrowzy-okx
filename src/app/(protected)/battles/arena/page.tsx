@@ -359,7 +359,10 @@ export default function BattleArenaPage() {
     onInvitationAccepted: data => {
       // Sender receives this when their invitation is accepted
       // Immediately transition to preparing state for sender
-      if (battleStateRef.current === 'invitation-sent') {
+      if (
+        battleStateRef.current === 'invitation-sent' ||
+        battleStateRef.current === 'waiting'
+      ) {
         setBattleState('preparing')
         setCurrentInvitationId(null)
 
@@ -401,12 +404,21 @@ export default function BattleArenaPage() {
           }
 
           setCurrentBattleData(formattedData)
+
+          // Update opponent info
+          setCurrentOpponent({
+            userId: opponentId,
+            username: opponentName,
+            combatPower: opponentCP
+          })
         }
 
-        // Show "PREPARING BATTLE..." message immediately for sender
-        // Then transition to countdown
+        // Synchronize countdown timing with accepter
+        // Both players transition to countdown after same preparing duration
         setTimeout(() => {
-          setBattleState('countdown')
+          if (battleStateRef.current === 'preparing') {
+            setBattleState('countdown')
+          }
         }, BATTLE_CONFIG.ROUND_SUMMARY_DISPLAY_TIME)
       }
     },
@@ -420,27 +432,14 @@ export default function BattleArenaPage() {
     },
     onBattleStarted: data => {
       // Both users receive this when battle starts
-      // Immediately transition to preparing then countdown for both players
+      // This event is sent to both players simultaneously to ensure sync
       const currentState = battleStateRef.current
 
-      // Clear invitation state for sender
-      if (currentState === 'invitation-sent') {
-        setCurrentInvitationId(null)
-      }
+      // Clear invitation state for both players
+      setCurrentInvitationId(null)
 
-      // Only process if not already in countdown or battling state
-      if (
-        currentState === 'invitation-received' ||
-        currentState === 'invitation-sent' ||
-        currentState === 'idle' ||
-        currentState === 'preparing' ||
-        currentState === 'countdown' // Allow updating battle data even if already in countdown
-      ) {
-        // Don't change state if already in countdown
-        if (currentState !== 'countdown') {
-          setBattleState('preparing')
-        }
-
+      // Process for all relevant states - ensure both players transition
+      if (currentState !== 'battling' && currentState !== 'result') {
         // Determine player positions correctly
         const currentUserIsPlayer1 = data.player1Id === user?.id
         const opponentId = currentUserIsPlayer1
@@ -456,8 +455,8 @@ export default function BattleArenaPage() {
             currentOpponent?.username ||
             'Opponent'
         const opponentCP = currentUserIsPlayer1
-          ? data.player2CP
-          : data.player1CP
+          ? data.player2CP || BATTLE_CONFIG.MIN_COMBAT_POWER
+          : data.player1CP || BATTLE_CONFIG.MIN_COMBAT_POWER
 
         // Format battle data properly for both users
         const formattedData: CurrentBattleData = {
@@ -474,27 +473,41 @@ export default function BattleArenaPage() {
           opponent: {
             id: opponentId,
             name: opponentName,
-            combatPower: opponentCP || BATTLE_CONFIG.MIN_COMBAT_POWER
+            combatPower: opponentCP
           },
           winnerId: data.winnerId,
-          feeDiscountPercent: data.feeDiscountPercent
+          feeDiscountPercent: data.feeDiscountPercent || 0
         }
 
         setCurrentBattleData(formattedData)
 
-        // Set opponent info if not already set
-        if (!currentOpponent) {
-          setCurrentOpponent({
-            userId: opponentId,
-            username: opponentName,
-            combatPower: opponentCP || BATTLE_CONFIG.MIN_COMBAT_POWER
-          })
-        }
+        // Update opponent info
+        setCurrentOpponent({
+          userId: opponentId,
+          username: opponentName,
+          combatPower: opponentCP
+        })
 
-        // Both players transition to countdown after preparing
-        setTimeout(() => {
-          setBattleState('countdown')
-        }, BATTLE_CONFIG.ROUND_SUMMARY_DISPLAY_TIME)
+        // Both players should be in sync now
+        // If we're not already in countdown, transition through preparing first
+        if (currentState !== 'countdown' && currentState !== 'preparing') {
+          setBattleState('preparing')
+
+          // Both players transition to countdown after same duration
+          setTimeout(() => {
+            if (battleStateRef.current === 'preparing') {
+              setBattleState('countdown')
+            }
+          }, BATTLE_CONFIG.ROUND_SUMMARY_DISPLAY_TIME)
+        } else if (currentState === 'preparing') {
+          // Already in preparing, just schedule countdown transition
+          setTimeout(() => {
+            if (battleStateRef.current === 'preparing') {
+              setBattleState('countdown')
+            }
+          }, BATTLE_CONFIG.ROUND_SUMMARY_DISPLAY_TIME)
+        }
+        // If already in countdown, don't change state but update battle data
       }
     },
     onBattleCompleted: data => {
@@ -589,36 +602,58 @@ export default function BattleArenaPage() {
     const result = await acceptInvitation(currentInvitationId)
 
     if (result) {
+      // Determine player positions - accepter can be either player1 or player2
+      // depending on who sent the invitation
+      const currentUserIsPlayer1 = result.player1Id === user?.id
+      const opponentId = currentUserIsPlayer1
+        ? result.player2Id || result.fromUserId
+        : result.player1Id || result.fromUserId
+      const opponentName = currentOpponent?.username || 'Opponent'
+      const opponentCP = currentUserIsPlayer1
+        ? result.player2CP ||
+          currentOpponent?.combatPower ||
+          BATTLE_CONFIG.MIN_COMBAT_POWER
+        : result.player1CP ||
+          currentOpponent?.combatPower ||
+          BATTLE_CONFIG.MIN_COMBAT_POWER
+
       // Format battle data properly
-      const isPlayer1 = result.fromUserId === user?.id
       const formattedData: CurrentBattleData = {
         battleId: result.battleId,
-        isPlayer1,
+        isPlayer1: currentUserIsPlayer1,
         player1: {
-          id: result.fromUserId,
+          id: result.player1Id || result.fromUserId,
           combatPower: result.player1CP || BATTLE_CONFIG.MIN_COMBAT_POWER
         },
         player2: {
-          id: result.toUserId,
+          id: result.player2Id || result.toUserId,
           combatPower: result.player2CP || BATTLE_CONFIG.MIN_COMBAT_POWER
         },
         opponent: {
-          id: currentOpponent?.userId || result.fromUserId,
-          name: currentOpponent?.username || 'Opponent',
-          combatPower: isPlayer1
-            ? result.player2CP || BATTLE_CONFIG.MIN_COMBAT_POWER
-            : result.player1CP || BATTLE_CONFIG.MIN_COMBAT_POWER
+          id: opponentId,
+          name: opponentName,
+          combatPower: opponentCP
         },
         winnerId: result.winnerId,
-        feeDiscountPercent: result.feeDiscountPercent
+        feeDiscountPercent: result.feeDiscountPercent || 0
       }
 
       setCurrentBattleData(formattedData)
       setCurrentInvitationId(null)
 
+      // Update opponent info to ensure consistency
+      setCurrentOpponent({
+        userId: opponentId,
+        username: opponentName,
+        combatPower: opponentCP
+      })
+
       // Synchronize countdown timing with sender
+      // Both players should transition after the same preparing duration
       setTimeout(() => {
-        setBattleState('countdown')
+        if (battleStateRef.current === 'preparing') {
+          setBattleState('countdown')
+        }
       }, BATTLE_CONFIG.ROUND_SUMMARY_DISPLAY_TIME)
     } else {
       // Invitation was invalid or expired
