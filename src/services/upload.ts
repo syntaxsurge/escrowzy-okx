@@ -33,7 +33,6 @@ export interface ProcessedFile {
   size: number
   extension: string
   relativePath: string
-  absolutePath: string
 }
 
 export interface UploadOptions {
@@ -192,8 +191,7 @@ export async function processUploadedFile(
         mimeType: detectedMimeType,
         size: file.size,
         extension: fileExt,
-        relativePath: blob.url, // Store the blob URL as relativePath for consistency
-        absolutePath: blob.url // Also store as absolutePath for backward compatibility
+        relativePath: blob.url // Store the blob URL as relativePath
       }
     } catch (blobError: any) {
       // Handle specific Vercel Blob errors
@@ -218,10 +216,10 @@ export async function processUploadedFile(
   } else {
     // Use filesystem storage in development
     const uploadsRoot = path.join(process.cwd(), 'uploads', ...pathSegments)
-    const absolutePath = path.join(uploadsRoot, safeFilename)
+    const fullPath = path.join(uploadsRoot, safeFilename)
 
     await mkdir(uploadsRoot, { recursive: true })
-    await writeFile(absolutePath, buffer)
+    await writeFile(fullPath, buffer)
 
     return {
       buffer,
@@ -230,8 +228,7 @@ export async function processUploadedFile(
       mimeType: detectedMimeType,
       size: file.size,
       extension: fileExt,
-      relativePath,
-      absolutePath
+      relativePath
     }
   }
 }
