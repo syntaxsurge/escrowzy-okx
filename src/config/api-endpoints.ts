@@ -22,8 +22,7 @@ export const apiEndpoints = {
   },
   user: {
     profile: '/api/user',
-    subscription: '/api/user/subscription',
-    avatar: '/api/user/avatar'
+    subscription: '/api/user/subscription'
   },
   team: '/api/team',
   notifications: {
@@ -129,9 +128,6 @@ export const apiEndpoints = {
   legalDocuments: {
     byType: (type: string) => `/api/legal-documents/${type}`
   },
-  chat: {
-    upload: '/api/chat/upload'
-  },
   trades: {
     base: '/api/trades',
     create: '/api/trades/create',
@@ -143,9 +139,6 @@ export const apiEndpoints = {
     deposit: (id: string | number) => `/api/trades/${id}/deposit`,
     fund: (id: string | number) => `/api/trades/${id}/fund`,
     paymentSent: (id: string | number) => `/api/trades/${id}/payment-sent`,
-    paymentProof: (id: string | number) => `/api/trades/${id}/payment-proof`,
-    disputeEvidence: (id: string | number) =>
-      `/api/trades/${id}/dispute-evidence`,
     confirm: (id: string | number) => `/api/trades/${id}/confirm`,
     dispute: (id: string | number) => `/api/trades/${id}/dispute`,
     cancel: (id: string | number) => `/api/trades/${id}/cancel`,
@@ -204,6 +197,7 @@ export const apiEndpoints = {
     tradingStats: (id: string) => `/api/users/${id}/trading-stats`
   },
   uploads: {
+    base: '/api/upload',
     getFile: (path: string) => `/api/uploads/${path}`
   },
   fees: {

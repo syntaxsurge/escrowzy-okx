@@ -24,12 +24,11 @@ import {
 } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { apiEndpoints } from '@/config/api-endpoints'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib'
-import { api } from '@/lib/api/http-client'
 import { handleFormError, handleFormSuccess } from '@/lib/utils/form'
 import { formatFileSize } from '@/lib/utils/string'
+import { uploadClient } from '@/services/upload-client'
 
 interface FileUploadDialogProps {
   open: boolean
@@ -128,46 +127,32 @@ export function FileUploadDialog({
     if (selectedFiles.length === 0) return
 
     setIsUploading(true)
-    const uploadedFiles: Array<{
-      name: string
-      size: number
-      type: string
-      url: string
-    }> = []
 
     try {
-      for (const file of selectedFiles) {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('contextType', contextType)
-        formData.append('contextId', contextId)
-
-        // Simulate progress (replace with actual progress tracking)
-        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }))
-
-        // For now, simulate progress since our API client doesn't support it
-        setUploadProgress(prev => ({ ...prev, [file.name]: 50 }))
-
-        const response = await api.post(apiEndpoints.chat.upload, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-
-        // Set to 100% after upload
-        setUploadProgress(prev => ({ ...prev, [file.name]: 100 }))
-
-        if (response.success && response.data) {
-          uploadedFiles.push({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            url: response.data.url
+      // Use centralized upload client with progress tracking
+      const result = await uploadClient.uploadFiles(selectedFiles, {
+        uploadType: 'ATTACHMENTS',
+        context: `${contextType}-${contextId}`,
+        onProgress: progress => {
+          // Update progress for all files
+          selectedFiles.forEach(file => {
+            setUploadProgress(prev => ({ ...prev, [file.name]: progress }))
           })
-        } else {
-          throw new Error(`Failed to upload ${file.name}`)
         }
+      })
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to upload files')
       }
+
+      // Map uploaded files to expected format
+      const uploadedFiles =
+        result.files?.map((file, index) => ({
+          name: file.originalName,
+          size: file.size,
+          type: file.mimeType,
+          url: file.url
+        })) || []
 
       onUpload(uploadedFiles)
       setSelectedFiles([])

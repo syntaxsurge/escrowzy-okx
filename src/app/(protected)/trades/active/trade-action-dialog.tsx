@@ -51,8 +51,8 @@ import { useToast } from '@/hooks/use-toast'
 import { api } from '@/lib/api/http-client'
 import { handleFormError } from '@/lib/utils/form'
 import { formatCurrency } from '@/lib/utils/string'
-import { uploadClient } from '@/lib/utils/upload-client'
 import { getUserDisplayName } from '@/lib/utils/user'
+import { uploadClient } from '@/services/upload-client'
 import type { TradeWithUsers, TradeMetadata } from '@/types/trade'
 
 interface TradeActionDialogProps {

@@ -1,6 +1,11 @@
+/**
+ * Client-side upload helpers
+ * This file contains client-side upload utilities that can be used in React components
+ */
+
 import { uploadConstants } from '@/config/business-constants'
 
-export interface UploadOptions {
+export interface ClientUploadOptions {
   uploadType: keyof typeof uploadConstants.UPLOAD_TYPES
   context?: string
   metadata?: Record<string, any>
@@ -8,7 +13,7 @@ export interface UploadOptions {
   maxRetries?: number
 }
 
-export interface UploadResult {
+export interface ClientUploadResult {
   success: boolean
   urls?: string[]
   files?: Array<{
@@ -34,8 +39,8 @@ export class UploadClient {
    */
   static async uploadFiles(
     files: File[],
-    options: UploadOptions
-  ): Promise<UploadResult> {
+    options: ClientUploadOptions
+  ): Promise<ClientUploadResult> {
     const maxRetries = options.maxRetries ?? this.DEFAULT_MAX_RETRIES
     let lastError: string | undefined
 
@@ -83,8 +88,8 @@ export class UploadClient {
    */
   static async uploadFile(
     file: File,
-    options: UploadOptions
-  ): Promise<UploadResult> {
+    options: ClientUploadOptions
+  ): Promise<ClientUploadResult> {
     return this.uploadFiles([file], options)
   }
 
@@ -93,8 +98,8 @@ export class UploadClient {
    */
   private static async performUpload(
     files: File[],
-    options: UploadOptions
-  ): Promise<UploadResult> {
+    options: ClientUploadOptions
+  ): Promise<ClientUploadResult> {
     try {
       const formData = new FormData()
 
@@ -154,8 +159,8 @@ export class UploadClient {
   private static uploadWithProgress(
     formData: FormData,
     onProgress: (progress: number) => void
-  ): Promise<UploadResult> {
-    return new Promise((resolve, reject) => {
+  ): Promise<ClientUploadResult> {
+    return new Promise((resolve, _reject) => {
       const xhr = new XMLHttpRequest()
 
       // Track upload progress
@@ -184,7 +189,7 @@ export class UploadClient {
               details: data.details
             })
           }
-        } catch (error) {
+        } catch (_error) {
           resolve({
             success: false,
             error: 'Failed to parse server response'

@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { uploadConstants } from '@/config/business-constants'
+import { sendMessageAction } from '@/lib/actions/chat'
 import { getCurrentUserAction } from '@/lib/actions/user'
+import { db } from '@/lib/db/drizzle'
+import { trades, users, attachments } from '@/lib/db/schema'
 import { uploadService } from '@/services/upload'
+import type { TradeMetadata } from '@/types/trade'
 
 const uploadSchema = z.object({
   uploadType: z.enum([
@@ -80,6 +85,8 @@ export async function POST(request: NextRequest) {
           subPath = `user-${user.id}/${context}`
           break
       }
+    } else if (uploadType === 'AVATARS') {
+      subPath = `user-${user.id}`
     }
 
     // Upload files using centralized service
@@ -107,6 +114,102 @@ export async function POST(request: NextRequest) {
         },
         { status: statusCode }
       )
+    }
+
+    // Handle specific upload type post-processing
+    switch (uploadType) {
+      case 'AVATARS':
+        // Update user's avatar in database
+        if (result.urls && result.urls[0]) {
+          await db
+            .update(users)
+            .set({
+              avatarPath: result.urls[0],
+              updatedAt: new Date()
+            })
+            .where(eq(users.id, user.id))
+        }
+        break
+
+      case 'PAYMENT_PROOFS':
+      case 'DOMAIN_TRANSFER_PROOFS':
+        // Update trade metadata with payment/domain proof
+        if (context && result.urls) {
+          const tradeId = parseInt(context.replace('trade-', ''))
+
+          // Get the trade
+          const [trade] = await db
+            .select()
+            .from(trades)
+            .where(eq(trades.id, tradeId))
+            .limit(1)
+
+          if (trade && trade.buyerId === user.id) {
+            const currentMetadata = (trade.metadata as TradeMetadata) || {}
+            const updatedMetadata: TradeMetadata = {
+              ...currentMetadata,
+              paymentProofImages: [
+                ...(currentMetadata.paymentProofImages || []),
+                ...result.urls
+              ],
+              paymentProofUploadedAt: new Date().toISOString()
+            }
+
+            await db
+              .update(trades)
+              .set({
+                metadata: updatedMetadata,
+                paymentSentAt: new Date()
+              })
+              .where(eq(trades.id, tradeId))
+
+            // Send automatic message to trade chat
+            try {
+              const messageContent =
+                uploadType === 'DOMAIN_TRANSFER_PROOFS'
+                  ? `Domain transfer proof uploaded. ${files.length} screenshot(s) attached.`
+                  : `Payment proof uploaded. ${files.length} screenshot(s) attached.`
+
+              const attachmentsList = result.urls.map((url, index) => ({
+                name: `proof-${index + 1}.jpg`,
+                url,
+                type: 'image/jpeg' as const,
+                size: files[index].size
+              }))
+
+              await sendMessageAction(
+                'trade' as any,
+                `trade_${tradeId}`,
+                messageContent,
+                attachmentsList
+              )
+            } catch (error) {
+              console.error('Failed to send automatic message:', error)
+            }
+          }
+        }
+        break
+
+      case 'ATTACHMENTS':
+        // Save attachment records for chat messages
+        if (context && result.urls && result.details) {
+          const messageId = parseInt(context.replace('message-', ''))
+
+          for (let i = 0; i < result.urls.length; i++) {
+            const url = result.urls[i]
+            const details = result.details[i]
+
+            await db.insert(attachments).values({
+              messageId,
+              userId: user.id,
+              filename: details.originalName,
+              mimeType: details.mimeType,
+              path: url,
+              size: details.size
+            })
+          }
+        }
+        break
     }
 
     // Return success response
@@ -180,6 +283,43 @@ export async function GET(request: NextRequest) {
     console.error('Get upload config error:', error)
     return NextResponse.json(
       { error: 'Failed to get upload configuration' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE endpoint to remove uploaded files (avatar only for now)
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getCurrentUserAction()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const uploadType = searchParams.get('type')
+
+    if (uploadType === 'AVATARS') {
+      // Remove avatar path from database
+      await db
+        .update(users)
+        .set({
+          avatarPath: null,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, user.id))
+
+      return NextResponse.json({ success: true })
+    }
+
+    return NextResponse.json(
+      { error: 'Delete not supported for this upload type' },
+      { status: 400 }
+    )
+  } catch (error) {
+    console.error('Delete upload error:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete upload' },
       { status: 500 }
     )
   }

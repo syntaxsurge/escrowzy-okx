@@ -179,10 +179,13 @@ function AccountInformation() {
 
     setIsUploadingAvatar(true)
     try {
+      // Use centralized upload API
       const formData = new FormData()
-      formData.append('avatar', file)
+      formData.append('files', file)
+      formData.append('uploadType', 'AVATARS')
+      formData.append('context', `user-${user?.id}`)
 
-      const response = await fetch(apiEndpoints.user.avatar, {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
         credentials: 'include'
@@ -206,7 +209,7 @@ function AccountInformation() {
   const handleAvatarDelete = async () => {
     setIsDeletingAvatar(true)
     try {
-      const response = await fetch(apiEndpoints.user.avatar, {
+      const response = await fetch('/api/upload?type=AVATARS', {
         method: 'DELETE',
         credentials: 'include'
       })

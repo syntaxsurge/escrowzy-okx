@@ -3,13 +3,12 @@
 import { eq } from 'drizzle-orm'
 
 import { pusherChannels, pusherEvents } from '@/config/api-endpoints'
-import { uploadConstants } from '@/config/business-constants'
 import { envPublic } from '@/config/env.public'
 import { envServer } from '@/config/env.server'
 import { getCurrentUserAction } from '@/lib/actions/user'
 import { db } from '@/lib/db/drizzle'
 import { attachments, messages } from '@/lib/db/schema'
-import { processUploadedFile, getUploadUrl } from '@/lib/utils/upload'
+import { uploadService } from '@/services/upload'
 
 export async function uploadAttachmentsAction(
   messageId: number,
@@ -33,6 +32,16 @@ export async function uploadAttachmentsAction(
     throw new Error('Unauthorized')
   }
 
+  // Use centralized upload service
+  const uploadResult = await uploadService.uploadFiles(files, {
+    uploadType: 'ATTACHMENTS',
+    subPath: `message-${messageId}`
+  })
+
+  if (!uploadResult.success) {
+    throw new Error(uploadResult.error || 'Failed to upload attachments')
+  }
+
   const uploadedFiles: Array<{
     id: number
     filename: string
@@ -43,20 +52,19 @@ export async function uploadAttachmentsAction(
     type: string
   }> = []
 
-  for (const file of files) {
-    const processedFile = await processUploadedFile(file, {
-      uploadType: uploadConstants.UPLOAD_TYPES.ATTACHMENTS
-    })
+  // Save attachment records
+  for (let i = 0; i < uploadResult.urls!.length; i++) {
+    const fileDetail = uploadResult.details![i]
 
     const [attachment] = await db
       .insert(attachments)
       .values({
         messageId: messageId,
         userId: user.id,
-        filename: processedFile.originalName,
-        mimeType: processedFile.mimeType,
-        path: processedFile.relativePath,
-        size: processedFile.size
+        filename: fileDetail.originalName,
+        mimeType: fileDetail.mimeType,
+        path: uploadResult.urls![i],
+        size: fileDetail.size
       })
       .returning()
 
@@ -65,7 +73,7 @@ export async function uploadAttachmentsAction(
       filename: attachment.filename,
       mimeType: attachment.mimeType,
       size: attachment.size,
-      url: getUploadUrl(processedFile.relativePath),
+      url: uploadResult.urls![i],
       name: attachment.filename,
       type: attachment.mimeType
     })
