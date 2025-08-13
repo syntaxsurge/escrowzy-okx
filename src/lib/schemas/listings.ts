@@ -34,6 +34,7 @@ const baseListingSchema = z.object({
 export const createP2PListingSchema = baseListingSchema.extend({
   listingCategory: z.literal(TradeCategory.P2P),
   listingType: z.enum(['buy', 'sell']),
+  chainId: z.string().optional(), // Add chainId as optional
   tokenOffered: z
     .string()
     .min(1, 'Token is required')

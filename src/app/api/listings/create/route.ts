@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
           ? 'Domain listing created successfully'
           : 'Listing created successfully'
     })
-  } catch (_error) {
-    return apiResponses.error('Failed to create listing')
+  } catch (error) {
+    return apiResponses.error(`Failed to create listing: ${error}`)
   }
 }

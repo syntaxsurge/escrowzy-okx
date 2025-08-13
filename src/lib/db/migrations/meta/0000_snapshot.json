@@ -1,5 +1,5 @@
 {
-  "id": "76faccd1-dc66-4da5-a988-77555de4faef",
+  "id": "c0554cd9-2652-4e64-98a4-70e56d71cf6f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -68,8 +68,12 @@
           "name": "achievement_nfts_user_id_users_id_fk",
           "tableFrom": "achievement_nfts",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -79,7 +83,10 @@
         "achievement_nfts_user_id_achievement_id_unique": {
           "name": "achievement_nfts_user_id_achievement_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id", "achievement_id"]
+          "columns": [
+            "user_id",
+            "achievement_id"
+          ]
         }
       },
       "policies": {},
@@ -171,8 +178,12 @@
           "name": "activity_logs_team_id_teams_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -180,8 +191,12 @@
           "name": "activity_logs_user_id_users_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -253,8 +268,12 @@
           "name": "admin_settings_updated_by_user_id_users_id_fk",
           "tableFrom": "admin_settings",
           "tableTo": "users",
-          "columnsFrom": ["updated_by_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "updated_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -372,8 +391,12 @@
           "name": "api_keys_user_id_users_id_fk",
           "tableFrom": "api_keys",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -381,8 +404,12 @@
           "name": "api_keys_team_id_teams_id_fk",
           "tableFrom": "api_keys",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -392,7 +419,9 @@
         "api_keys_key_hash_unique": {
           "name": "api_keys_key_hash_unique",
           "nullsNotDistinct": false,
-          "columns": ["key_hash"]
+          "columns": [
+            "key_hash"
+          ]
         }
       },
       "policies": {},
@@ -475,8 +504,12 @@
           "name": "attachments_message_id_messages_id_fk",
           "tableFrom": "attachments",
           "tableTo": "messages",
-          "columnsFrom": ["message_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -484,8 +517,12 @@
           "name": "attachments_user_id_users_id_fk",
           "tableFrom": "attachments",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -624,8 +661,12 @@
           "name": "battle_invitations_from_user_id_users_id_fk",
           "tableFrom": "battle_invitations",
           "tableTo": "users",
-          "columnsFrom": ["from_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "from_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -633,8 +674,12 @@
           "name": "battle_invitations_to_user_id_users_id_fk",
           "tableFrom": "battle_invitations",
           "tableTo": "users",
-          "columnsFrom": ["to_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "to_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -644,7 +689,11 @@
         "unique_active_invitation": {
           "name": "unique_active_invitation",
           "nullsNotDistinct": false,
-          "columns": ["from_user_id", "to_user_id", "status"]
+          "columns": [
+            "from_user_id",
+            "to_user_id",
+            "status"
+          ]
         }
       },
       "policies": {},
@@ -804,8 +853,12 @@
           "name": "battle_queue_user_id_users_id_fk",
           "tableFrom": "battle_queue",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -813,8 +866,12 @@
           "name": "battle_queue_matched_with_user_id_users_id_fk",
           "tableFrom": "battle_queue",
           "tableTo": "users",
-          "columnsFrom": ["matched_with_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "matched_with_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -824,7 +881,9 @@
         "battle_queue_user_id_unique": {
           "name": "battle_queue_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id"]
+          "columns": [
+            "user_id"
+          ]
         }
       },
       "policies": {},
@@ -986,8 +1045,12 @@
           "name": "battle_rounds_battle_id_battles_id_fk",
           "tableFrom": "battle_rounds",
           "tableTo": "battles",
-          "columnsFrom": ["battle_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "battle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -997,7 +1060,10 @@
         "unique_battle_round": {
           "name": "unique_battle_round",
           "nullsNotDistinct": false,
-          "columns": ["battle_id", "round_number"]
+          "columns": [
+            "battle_id",
+            "round_number"
+          ]
         }
       },
       "policies": {},
@@ -1113,8 +1179,12 @@
           "name": "battle_session_rejections_user_id_users_id_fk",
           "tableFrom": "battle_session_rejections",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1122,8 +1192,12 @@
           "name": "battle_session_rejections_rejected_user_id_users_id_fk",
           "tableFrom": "battle_session_rejections",
           "tableTo": "users",
-          "columnsFrom": ["rejected_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "rejected_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1133,7 +1207,11 @@
         "unique_session_rejection": {
           "name": "unique_session_rejection",
           "nullsNotDistinct": false,
-          "columns": ["user_id", "rejected_user_id", "session_id"]
+          "columns": [
+            "user_id",
+            "rejected_user_id",
+            "session_id"
+          ]
         }
       },
       "policies": {},
@@ -1348,8 +1426,12 @@
           "name": "battle_states_battle_id_battles_id_fk",
           "tableFrom": "battle_states",
           "tableTo": "battles",
-          "columnsFrom": ["battle_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "battle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1359,7 +1441,9 @@
         "battle_states_battle_id_unique": {
           "name": "battle_states_battle_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["battle_id"]
+          "columns": [
+            "battle_id"
+          ]
         }
       },
       "policies": {},
@@ -1546,8 +1630,12 @@
           "name": "battles_player1_id_users_id_fk",
           "tableFrom": "battles",
           "tableTo": "users",
-          "columnsFrom": ["player1_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "player1_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1555,8 +1643,12 @@
           "name": "battles_player2_id_users_id_fk",
           "tableFrom": "battles",
           "tableTo": "users",
-          "columnsFrom": ["player2_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "player2_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1564,8 +1656,12 @@
           "name": "battles_winner_id_users_id_fk",
           "tableFrom": "battles",
           "tableTo": "users",
-          "columnsFrom": ["winner_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "winner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1624,8 +1720,12 @@
           "name": "email_verification_requests_user_id_users_id_fk",
           "tableFrom": "email_verification_requests",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1635,7 +1735,9 @@
         "email_verification_requests_token_unique": {
           "name": "email_verification_requests_token_unique",
           "nullsNotDistinct": false,
-          "columns": ["token"]
+          "columns": [
+            "token"
+          ]
         }
       },
       "policies": {},
@@ -1670,6 +1772,18 @@
           "type": "varchar(10)",
           "primaryKey": false,
           "notNull": true
+        },
+        "chain_id": {
+          "name": "chain_id",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "token_address": {
+          "name": "token_address",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "token_offered": {
           "name": "token_offered",
@@ -1804,8 +1918,12 @@
           "name": "escrow_listings_user_id_users_id_fk",
           "tableFrom": "escrow_listings",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2036,8 +2154,12 @@
           "name": "message_reads_user_id_users_id_fk",
           "tableFrom": "message_reads",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2045,8 +2167,12 @@
           "name": "message_reads_last_read_message_id_messages_id_fk",
           "tableFrom": "message_reads",
           "tableTo": "messages",
-          "columnsFrom": ["last_read_message_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "last_read_message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2056,7 +2182,11 @@
         "message_reads_user_id_context_type_context_id_unique": {
           "name": "message_reads_user_id_context_type_context_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id", "context_type", "context_id"]
+          "columns": [
+            "user_id",
+            "context_type",
+            "context_id"
+          ]
         }
       },
       "policies": {},
@@ -2173,8 +2303,12 @@
           "name": "messages_sender_id_users_id_fk",
           "tableFrom": "messages",
           "tableTo": "users",
-          "columnsFrom": ["sender_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "sender_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2258,8 +2392,12 @@
           "name": "payment_history_team_id_teams_id_fk",
           "tableFrom": "payment_history",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2267,8 +2405,12 @@
           "name": "payment_history_user_id_users_id_fk",
           "tableFrom": "payment_history",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2335,7 +2477,10 @@
         "platform_contracts_chain_id_contract_type_unique": {
           "name": "platform_contracts_chain_id_contract_type_unique",
           "nullsNotDistinct": false,
-          "columns": ["chain_id", "contract_type"]
+          "columns": [
+            "chain_id",
+            "contract_type"
+          ]
         }
       },
       "policies": {},
@@ -2403,8 +2548,12 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2414,7 +2563,9 @@
         "sessions_session_token_unique": {
           "name": "sessions_session_token_unique",
           "nullsNotDistinct": false,
-          "columns": ["session_token"]
+          "columns": [
+            "session_token"
+          ]
         }
       },
       "policies": {},
@@ -2501,8 +2652,12 @@
           "name": "team_invitations_team_id_teams_id_fk",
           "tableFrom": "team_invitations",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2510,8 +2665,12 @@
           "name": "team_invitations_invited_by_user_id_users_id_fk",
           "tableFrom": "team_invitations",
           "tableTo": "users",
-          "columnsFrom": ["invited_by_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "invited_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2521,7 +2680,9 @@
         "team_invitations_token_unique": {
           "name": "team_invitations_token_unique",
           "nullsNotDistinct": false,
-          "columns": ["token"]
+          "columns": [
+            "token"
+          ]
         }
       },
       "policies": {},
@@ -2570,8 +2731,12 @@
           "name": "team_members_user_id_users_id_fk",
           "tableFrom": "team_members",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2579,8 +2744,12 @@
           "name": "team_members_team_id_teams_id_fk",
           "tableFrom": "team_members",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2654,8 +2823,12 @@
           "name": "teams_team_owner_id_users_id_fk",
           "tableFrom": "teams",
           "tableTo": "users",
-          "columnsFrom": ["team_owner_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2874,8 +3047,12 @@
           "name": "trades_buyer_id_users_id_fk",
           "tableFrom": "trades",
           "tableTo": "users",
-          "columnsFrom": ["buyer_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "buyer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2883,8 +3060,12 @@
           "name": "trades_seller_id_users_id_fk",
           "tableFrom": "trades",
           "tableTo": "users",
-          "columnsFrom": ["seller_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "seller_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3010,8 +3191,12 @@
           "name": "user_game_data_user_id_users_id_fk",
           "tableFrom": "user_game_data",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3021,7 +3206,9 @@
         "user_game_data_user_id_unique": {
           "name": "user_game_data_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id"]
+          "columns": [
+            "user_id"
+          ]
         }
       },
       "policies": {},
@@ -3084,8 +3271,12 @@
           "name": "user_subscriptions_user_id_users_id_fk",
           "tableFrom": "user_subscriptions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3190,8 +3381,12 @@
           "name": "user_trading_stats_user_id_users_id_fk",
           "tableFrom": "user_trading_stats",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3201,7 +3396,9 @@
         "user_trading_stats_user_id_unique": {
           "name": "user_trading_stats_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id"]
+          "columns": [
+            "user_id"
+          ]
         }
       },
       "policies": {},
@@ -3284,12 +3481,16 @@
         "users_wallet_address_unique": {
           "name": "users_wallet_address_unique",
           "nullsNotDistinct": false,
-          "columns": ["wallet_address"]
+          "columns": [
+            "wallet_address"
+          ]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       },
       "policies": {},

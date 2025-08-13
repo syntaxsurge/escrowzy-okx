@@ -117,7 +117,16 @@ export default function CreateP2PListingPage() {
         }
       }
 
-      const response = await api.post(apiEndpoints.listings.create, data)
+      // Include chainId in the submission
+      const submissionData = {
+        ...data,
+        chainId: (chainId || DEFAULT_CHAIN_ID).toString()
+      }
+
+      const response = await api.post(
+        apiEndpoints.listings.create,
+        submissionData
+      )
 
       if (response.success) {
         handleFormSuccess(toast, 'P2P listing created successfully!')

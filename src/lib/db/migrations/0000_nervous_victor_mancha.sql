@@ -186,6 +186,8 @@ CREATE TABLE "escrow_listings" (
 	"user_id" integer NOT NULL,
 	"listing_category" varchar(20) DEFAULT 'p2p' NOT NULL,
 	"listing_type" varchar(10) NOT NULL,
+	"chain_id" varchar(20),
+	"token_address" varchar(255),
 	"token_offered" varchar(10),
 	"amount" varchar(50),
 	"price_per_unit" varchar(50),

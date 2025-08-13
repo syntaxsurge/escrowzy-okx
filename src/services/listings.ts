@@ -31,7 +31,8 @@ export async function createListing(
     paymentWindow:
       input.paymentWindow || listingConstants.DEFAULT_PAYMENT_WINDOW,
     isActive: true,
-    metadata: {}
+    metadata: {},
+    chainId: (input as any).chainId || null // Add chainId from input
   }
 
   if (input.listingCategory === 'p2p') {
