@@ -7,8 +7,8 @@ import path from 'path'
 import { put } from '@vercel/blob'
 import { fileTypeFromBuffer } from 'file-type'
 
-import { apiEndpoints } from '@/config/api-endpoints'
 import { uploadConstants } from '@/config/business-constants'
+import { getUploadUrl } from '@/lib/utils/upload'
 
 // ============================================
 // Types and Interfaces
@@ -82,18 +82,6 @@ const DEFAULT_DOCUMENT_TYPES = [
 // ============================================
 // Utility Functions
 // ============================================
-
-/**
- * Get the URL for an uploaded file
- */
-export function getUploadUrl(relativePath: string): string {
-  // If it's already a full URL (from Vercel Blob), return as-is
-  if (relativePath.startsWith('http')) {
-    return relativePath
-  }
-  // For local uploads, prepend the uploads endpoint
-  return `${apiEndpoints.uploads.base}/${relativePath}`
-}
 
 /**
  * Validate an image file

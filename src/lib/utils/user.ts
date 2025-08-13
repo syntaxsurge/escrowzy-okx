@@ -1,6 +1,6 @@
 import { truncateAddress } from '@/lib'
-import { getUploadUrl } from '@/services/upload'
 
+import { getUploadUrl } from './upload'
 import type { User } from '../db/schema'
 
 interface UserDisplayOptions {
