@@ -491,7 +491,7 @@ pnpm start
 
 - 🌐 **Live Platform**:
   [escrowzy-okx.vercel.app](https://escrowzy-okx.vercel.app/)
-- 📹 **Demo Video**: [youtu.be/xxxxxxx](https://youtu.be/xxxxxxx)
+- 📹 **Demo Video**: [youtu.be/ZJdJATkRHgg](https://youtu.be/ZJdJATkRHgg)
 - 💻 **GitHub**:
   [github.com/syntaxsurge/escrowzy-okx](https://github.com/syntaxsurge/escrowzy-okx)
 
