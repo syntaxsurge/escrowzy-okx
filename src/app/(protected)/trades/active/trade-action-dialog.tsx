@@ -46,12 +46,7 @@ import { apiEndpoints } from '@/config/api-endpoints'
 import { useBlockchain } from '@/context'
 import { useEscrow } from '@/hooks/blockchain/use-escrow'
 import { useToast } from '@/hooks/use-toast'
-import { getCryptoPrice } from '@/lib/api/coingecko'
 import { api } from '@/lib/api/http-client'
-import {
-  getCoingeckoPriceId,
-  getNativeCurrencyDecimals
-} from '@/lib/blockchain'
 import { handleFormError } from '@/lib/utils/form'
 import { formatCurrency } from '@/lib/utils/string'
 import { getUserDisplayName } from '@/lib/utils/user'
@@ -114,6 +109,9 @@ export function TradeActionDialog({
   const [depositTimeLeft, setDepositTimeLeft] = useState<number | null>(null)
   const [isCreatingEscrow, setIsCreatingEscrow] = useState(false)
   const [calculatedFee, setCalculatedFee] = useState<string>('0')
+  const [nativeAmount, setNativeAmount] = useState<string | null>(null)
+  const [nativeSymbol, setNativeSymbol] = useState<string | null>(null)
+  const [nativePrice, setNativePrice] = useState<number | null>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxImages, setLightboxImages] = useState<Array<{ src: string }>>(
     []
@@ -135,6 +133,15 @@ export function TradeActionDialog({
         })
     }
   }, [open, trade.amount, address, calculateFee])
+
+  // Reset native conversion state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setNativeAmount(null)
+      setNativeSymbol(null)
+      setNativePrice(null)
+    }
+  }, [open])
 
   // Calculate deposit deadline countdown
   useEffect(() => {
@@ -358,18 +365,40 @@ export function TradeActionDialog({
               const sellerAddress =
                 trade.seller?.walletAddress || trade.sellerId
 
-              // Convert USD amount to native currency
-              const coingeckoId = getCoingeckoPriceId(trade.chainId)
-              const nativePrice = await getCryptoPrice(coingeckoId)
-              const usdAmount = parseFloat(trade.amount)
-              const nativeAmount = (usdAmount / nativePrice).toFixed(
-                getNativeCurrencyDecimals(trade.chainId)
+              // Convert USD amount to native currency via API
+              const conversionResponse = await fetch(
+                apiEndpoints.trades.convertPrice,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    usdAmount: trade.amount,
+                    chainId: trade.chainId
+                  })
+                }
               )
+
+              if (!conversionResponse.ok) {
+                throw new Error('Failed to convert USD to native currency')
+              }
+
+              const conversionResult = await conversionResponse.json()
+              const convertedNativeAmount = conversionResult.data.nativeAmount
+
+              // Store the conversion info for display in the dialog
+              setNativeAmount(convertedNativeAmount)
+              setNativePrice(conversionResult.data.nativePrice)
+
+              // Get native currency symbol
+              import('@/lib/blockchain').then(({ getNativeCurrencySymbol }) => {
+                const symbol = getNativeCurrencySymbol(trade.chainId)
+                setNativeSymbol(symbol)
+              })
 
               // Create and fund escrow in one transaction
               const createResult = await createEscrow({
                 seller: sellerAddress as string, // Domain seller will receive payment
-                amount: nativeAmount, // Use converted native amount instead of USD
+                amount: convertedNativeAmount, // Use converted native amount instead of USD
                 disputeWindow: 7 * 24 * 60 * 60, // 7 days
                 metadata: `Domain Trade #${trade.id}`,
                 autoFund: true // Fund in the same transaction
@@ -969,6 +998,20 @@ export function TradeActionDialog({
                               </span>{' '}
                               to the escrow smart contract.
                             </p>
+                            {nativeAmount && nativeSymbol && nativePrice && (
+                              <div className='rounded-md bg-blue-50 p-2 dark:bg-blue-950/30'>
+                                <p className='text-sm font-medium'>
+                                  Equivalent in {nativeSymbol}:{' '}
+                                  <span className='font-mono font-bold text-blue-700 dark:text-blue-300'>
+                                    {nativeAmount} {nativeSymbol}
+                                  </span>
+                                </p>
+                                <p className='text-xs text-blue-600 dark:text-blue-400'>
+                                  at current rate: 1 {nativeSymbol} = $
+                                  {nativePrice.toFixed(2)}
+                                </p>
+                              </div>
+                            )}
                             <p className='text-sm'>
                               The payment will be held securely until you
                               confirm receiving the domain.

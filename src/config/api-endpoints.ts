@@ -148,7 +148,8 @@ export const apiEndpoints = {
       `/api/trades/${id}/dispute-evidence`,
     confirm: (id: string | number) => `/api/trades/${id}/confirm`,
     dispute: (id: string | number) => `/api/trades/${id}/dispute`,
-    cancel: (id: string | number) => `/api/trades/${id}/cancel`
+    cancel: (id: string | number) => `/api/trades/${id}/cancel`,
+    convertPrice: '/api/trades/convert-price'
   },
   listings: {
     base: '/api/listings',
