@@ -3,6 +3,7 @@
 import { ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/badge'
+import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib'
 
 export interface StatCard {
@@ -13,6 +14,7 @@ export interface StatCard {
   badge?: string
   badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline'
   colorScheme: 'yellow' | 'blue' | 'orange' | 'red' | 'green' | 'purple'
+  isLoading?: boolean
 }
 
 const colorSchemes = {
@@ -73,16 +75,19 @@ const colorSchemes = {
 interface GamifiedStatsCardsProps {
   cards: StatCard[]
   className?: string
+  isLoading?: boolean
 }
 
 export function GamifiedStatsCards({
   cards,
-  className
+  className,
+  isLoading = false
 }: GamifiedStatsCardsProps) {
   return (
     <div className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>
       {cards.map((card, index) => {
         const scheme = colorSchemes[card.colorScheme]
+        const cardIsLoading = isLoading || card.isLoading
         return (
           <div
             key={index}
@@ -108,13 +113,19 @@ export function GamifiedStatsCards({
                   </Badge>
                 )}
               </div>
-              <div className={cn('text-4xl font-black', scheme.text)}>
-                {card.value}
-              </div>
+              {cardIsLoading ? (
+                <div className='flex h-12 items-center'>
+                  <Spinner size='md' className={scheme.text} />
+                </div>
+              ) : (
+                <div className={cn('text-4xl font-black', scheme.text)}>
+                  {card.value}
+                </div>
+              )}
               <p className='text-muted-foreground mt-1 text-xs tracking-wider uppercase'>
                 {card.title}
               </p>
-              {card.subtitle && (
+              {!cardIsLoading && card.subtitle && (
                 <p className='text-muted-foreground mt-1 text-xs'>
                   {card.subtitle}
                 </p>

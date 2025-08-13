@@ -27,6 +27,7 @@ import { OKXQueueStatus } from '@/components/okx-queue-status'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { apiEndpoints } from '@/config/api-endpoints'
 import { appRoutes } from '@/config/app-routes'
@@ -130,21 +131,22 @@ export default function SwapPage() {
       title: `${marketStats?.stats?.nativeTokenSymbol || 'ETH'} Price`,
       value: marketStats?.stats?.nativeTokenPrice
         ? formatCurrency(marketStats.stats.nativeTokenPrice, 'USD')
-        : '$0',
+        : '',
       subtitle:
         marketStats?.stats?.nativeToken24hChange !== undefined
           ? `${marketStats.stats.nativeToken24hChange > 0 ? '+' : ''}${marketStats.stats.nativeToken24hChange.toFixed(2)}% (24h)`
-          : 'Loading...',
+          : undefined,
       icon: <TrendingUp className='h-5 w-5 text-white' />,
       badge: 'LIVE',
       colorScheme:
-        marketStats?.stats?.nativeToken24hChange > 0 ? 'green' : 'red'
+        marketStats?.stats?.nativeToken24hChange > 0 ? 'green' : 'red',
+      isLoading: !marketStats?.stats?.nativeTokenPrice
     },
     {
       title: 'Gas Price',
       value: gasData?.gasPrice?.average
         ? `${gasData.gasPrice.average} Gwei`
-        : '-- Gwei',
+        : '',
       subtitle:
         networkStatus === 'low'
           ? 'Network idle'
@@ -152,9 +154,12 @@ export default function SwapPage() {
             ? 'Normal activity'
             : networkStatus === 'busy'
               ? 'High activity'
-              : 'Very congested',
+              : networkStatus === 'unknown'
+                ? undefined
+                : 'Very congested',
       icon: <Fuel className='h-5 w-5 text-white' />,
-      badge: networkStatus.toUpperCase(),
+      badge:
+        networkStatus !== 'unknown' ? networkStatus.toUpperCase() : 'LOADING',
       colorScheme:
         networkStatus === 'low'
           ? 'green'
@@ -162,23 +167,26 @@ export default function SwapPage() {
             ? 'blue'
             : networkStatus === 'busy'
               ? 'yellow'
-              : 'red'
+              : 'red',
+      isLoading: !gasData?.gasPrice
     },
     {
       title: 'Liquidity Sources',
-      value: marketStats?.stats?.activeLiquiditySources ?? 0,
-      subtitle: 'Active DEX protocols',
+      value: marketStats?.stats?.activeLiquiditySources ?? '',
+      subtitle: marketStats?.stats ? 'Active DEX protocols' : undefined,
       icon: <Server className='h-5 w-5 text-white' />,
       badge: 'AGGREGATED',
-      colorScheme: 'purple'
+      colorScheme: 'purple',
+      isLoading: !marketStats?.stats
     },
     {
       title: 'Networks',
-      value: marketStats?.stats?.supportedChains ?? 0,
-      subtitle: 'Supported chains',
+      value: marketStats?.stats?.supportedChains ?? '',
+      subtitle: marketStats?.stats ? 'Supported chains' : undefined,
       icon: <Network className='h-5 w-5 text-white' />,
       badge: 'MULTI-CHAIN',
-      colorScheme: 'blue'
+      colorScheme: 'blue',
+      isLoading: !marketStats?.stats
     }
   ]
 
@@ -263,34 +271,53 @@ export default function SwapPage() {
             </div>
 
             {/* Gas Price Details */}
-            {gasData?.gasPrice && (
-              <div className='mt-4 grid grid-cols-3 gap-4'>
-                <div className='rounded-lg bg-black/10 p-3 dark:bg-white/10'>
-                  <p className='text-muted-foreground text-xs font-semibold'>
-                    SLOW
-                  </p>
+            <div className='mt-4 grid grid-cols-3 gap-4'>
+              <div className='rounded-lg bg-black/10 p-3 dark:bg-white/10'>
+                <p className='text-muted-foreground text-xs font-semibold'>
+                  SLOW
+                </p>
+                {gasData?.gasPrice ? (
                   <p className='text-lg font-black'>
                     {gasData.gasPrice.slow} Gwei
                   </p>
-                </div>
-                <div className='rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-3 ring-2 ring-blue-500/50'>
-                  <p className='text-xs font-semibold text-blue-600 dark:text-blue-400'>
-                    AVERAGE
-                  </p>
+                ) : (
+                  <div className='flex h-7 items-center'>
+                    <Spinner size='sm' className='text-muted-foreground' />
+                  </div>
+                )}
+              </div>
+              <div className='rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-3 ring-2 ring-blue-500/50'>
+                <p className='text-xs font-semibold text-blue-600 dark:text-blue-400'>
+                  AVERAGE
+                </p>
+                {gasData?.gasPrice ? (
                   <p className='text-lg font-black'>
                     {gasData.gasPrice.average} Gwei
                   </p>
-                </div>
-                <div className='rounded-lg bg-black/10 p-3 dark:bg-white/10'>
-                  <p className='text-muted-foreground text-xs font-semibold'>
-                    FAST
-                  </p>
+                ) : (
+                  <div className='flex h-7 items-center'>
+                    <Spinner
+                      size='sm'
+                      className='text-blue-600 dark:text-blue-400'
+                    />
+                  </div>
+                )}
+              </div>
+              <div className='rounded-lg bg-black/10 p-3 dark:bg-white/10'>
+                <p className='text-muted-foreground text-xs font-semibold'>
+                  FAST
+                </p>
+                {gasData?.gasPrice ? (
                   <p className='text-lg font-black'>
                     {gasData.gasPrice.fast} Gwei
                   </p>
-                </div>
+                ) : (
+                  <div className='flex h-7 items-center'>
+                    <Spinner size='sm' className='text-muted-foreground' />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </Card>
 
