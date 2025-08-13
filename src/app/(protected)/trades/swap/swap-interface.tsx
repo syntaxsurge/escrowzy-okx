@@ -22,13 +22,18 @@ import {
 import { toast } from 'sonner'
 import { NATIVE_TOKEN_ADDRESS, ZERO_ADDRESS } from 'thirdweb'
 import { formatUnits } from 'viem'
-import { useAccount, useChainId, useBalance, useWalletClient } from 'wagmi'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  useUnifiedWalletInfo,
+  useUnifiedChainInfo,
+  useUnifiedBalance,
+  useUnifiedWalletClient
+} from '@/context/blockchain'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useSwap } from '@/hooks/use-swap'
 import { useTokenBalances } from '@/hooks/use-token-balances'
@@ -47,9 +52,9 @@ interface Token {
 }
 
 export function SwapInterface() {
-  const { address, isConnected } = useAccount()
-  const chainId = useChainId()
-  const { data: walletClient } = useWalletClient()
+  const { address, isConnected } = useUnifiedWalletInfo()
+  const { chainId } = useUnifiedChainInfo()
+  const { data: walletClient, sendTransaction } = useUnifiedWalletClient()
   const { isLoadingQuote, isExecutingSwap, getQuote, executeSwap } = useSwap()
   const {
     balances,
@@ -80,10 +85,7 @@ export function SwapInterface() {
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
 
   // Get native token balance
-  const { data: nativeBalance } = useBalance({
-    address: address,
-    chainId: chainId
-  })
+  const { data: nativeBalance } = useUnifiedBalance()
 
   // Merge token data with balances and sort by balance
   const availableTokens = useMemo(() => {
@@ -395,7 +397,7 @@ export function SwapInterface() {
       fromToken.address,
       toToken.address,
       fromAmount,
-      chainId,
+      chainId || 1, // Default to mainnet if chainId is undefined
       slippage
     )
 
@@ -493,7 +495,7 @@ export function SwapInterface() {
       return
     }
 
-    if (!walletClient) {
+    if (!walletClient && !sendTransaction) {
       toast.error('Wallet client not available')
       return
     }
@@ -510,21 +512,41 @@ export function SwapInterface() {
 
     try {
       // Get the transaction data from the API
-      const swapData = await executeSwap(address, chainId)
+      const swapData = await executeSwap(address, chainId || 1) // Default to mainnet if chainId is undefined
 
       if (swapData && swapData.success && swapData.tx) {
-        // Execute the transaction using the wallet
-        const txHash = await walletClient.sendTransaction({
-          to: swapData.tx.to as `0x${string}`,
-          data: swapData.tx.data as `0x${string}`,
-          value: BigInt(swapData.tx.value || '0'),
-          gas: swapData.tx.gas ? BigInt(swapData.tx.gas) : undefined,
-          gasPrice: swapData.tx.gasPrice
-            ? BigInt(swapData.tx.gasPrice)
-            : undefined,
-          account: address,
-          chain: walletClient.chain
-        })
+        // Execute the transaction using the unified wallet
+        let txHash: string
+
+        if (sendTransaction) {
+          // Use the unified sendTransaction method
+          txHash = await sendTransaction({
+            to: swapData.tx.to as `0x${string}`,
+            data: swapData.tx.data as `0x${string}`,
+            value: BigInt(swapData.tx.value || '0'),
+            gas: swapData.tx.gas ? BigInt(swapData.tx.gas) : undefined,
+            gasPrice: swapData.tx.gasPrice
+              ? BigInt(swapData.tx.gasPrice)
+              : undefined,
+            account: address as `0x${string}`,
+            chain: walletClient?.chain
+          })
+        } else if (walletClient?.sendTransaction) {
+          // Fallback to direct wallet client if available
+          txHash = await walletClient.sendTransaction({
+            to: swapData.tx.to as `0x${string}`,
+            data: swapData.tx.data as `0x${string}`,
+            value: BigInt(swapData.tx.value || '0'),
+            gas: swapData.tx.gas ? BigInt(swapData.tx.gas) : undefined,
+            gasPrice: swapData.tx.gasPrice
+              ? BigInt(swapData.tx.gasPrice)
+              : undefined,
+            account: address as `0x${string}`,
+            chain: walletClient.chain
+          })
+        } else {
+          throw new Error('No transaction method available')
+        }
 
         toast.success(`Transaction submitted! Hash: ${txHash.slice(0, 10)}...`)
 

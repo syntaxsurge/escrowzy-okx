@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import { NATIVE_TOKEN_ADDRESS } from 'thirdweb'
-import { useAccount, useChainId } from 'wagmi'
 
 import { apiEndpoints } from '@/config/api-endpoints'
+import { useUnifiedWalletInfo, useUnifiedChainInfo } from '@/context/blockchain'
 import type { OKXBalanceInfo, OKXTokenInfo } from '@/types/okx-dex'
 
 export function useTokenBalances() {
-  const { address } = useAccount()
-  const chainId = useChainId()
+  const { address } = useUnifiedWalletInfo()
+  const { chainId } = useUnifiedChainInfo()
 
   const [balances, setBalances] = useState<OKXBalanceInfo[]>([])
   const [popularTokens, setPopularTokens] = useState<OKXTokenInfo[]>([])

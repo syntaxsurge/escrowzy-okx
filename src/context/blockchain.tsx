@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useRef,
+  useState,
   type ReactNode
 } from 'react'
 
@@ -27,6 +28,17 @@ import {
 
 import { getWalletProvider, WalletProviders } from '@/config/wallet-provider'
 import { getChainConfig, getNativeCurrencySymbol } from '@/lib/blockchain'
+import { thirdwebClient } from '@/lib/blockchain/thirdweb-client'
+
+interface TransactionRequest {
+  to: `0x${string}`
+  data?: `0x${string}`
+  value?: bigint
+  gas?: bigint
+  gasPrice?: bigint
+  account?: `0x${string}`
+  chain?: any
+}
 
 interface BlockchainContextValue {
   // Wallet info
@@ -45,11 +57,20 @@ interface BlockchainContextValue {
   // Transaction functions
   walletClient?: any
   switchChain?: (chainId: number) => Promise<void>
+  sendTransaction?: (request: TransactionRequest) => Promise<`0x${string}`>
 
   // Account change detection
   onAddressChange?: (
     callback: (newAddress?: string, oldAddress?: string) => void
   ) => void
+
+  // Native balance info
+  nativeBalance?: {
+    value: bigint
+    decimals: number
+    symbol: string
+    formatted: string
+  }
 }
 
 const BlockchainContext = createContext<BlockchainContextValue | null>(null)
@@ -60,6 +81,15 @@ function ThirdwebBlockchainProvider({ children }: { children: ReactNode }) {
   const thirdwebWallet = useActiveWallet()
   const activeChain = useActiveWalletChain()
   const { disconnect: thirdwebDisconnect } = useThirdwebDisconnect()
+  const [nativeBalance, setNativeBalance] = useState<
+    | {
+        value: bigint
+        decimals: number
+        symbol: string
+        formatted: string
+      }
+    | undefined
+  >(undefined)
 
   // Track previous address to detect changes
   const prevAddressRef = useRef<string | undefined>(undefined)
@@ -92,11 +122,80 @@ function ThirdwebBlockchainProvider({ children }: { children: ReactNode }) {
     }
   }, [thirdwebAccount?.address])
 
+  // Fetch native balance for ThirdWeb
+  useEffect(() => {
+    if (!thirdwebAccount?.address || !activeChain) {
+      setNativeBalance(undefined)
+      return
+    }
+
+    const fetchBalance = async () => {
+      try {
+        // Use thirdweb's balance fetching
+        const { getWalletBalance } = await import('thirdweb/wallets')
+        const balance = await getWalletBalance({
+          address: thirdwebAccount.address,
+          chain: activeChain,
+          client: thirdwebClient
+        })
+
+        const decimals = 18 // Native tokens typically have 18 decimals
+        const formatted = formatUnits(balance.value, decimals)
+
+        setNativeBalance({
+          value: balance.value,
+          decimals,
+          symbol: nativeCurrencySymbol,
+          formatted
+        })
+      } catch (error) {
+        console.error('Failed to fetch ThirdWeb balance:', error)
+        setNativeBalance(undefined)
+      }
+    }
+
+    fetchBalance()
+    // Refetch balance every 10 seconds
+    const interval = setInterval(fetchBalance, 10000)
+    return () => clearInterval(interval)
+  }, [thirdwebAccount?.address, activeChain, nativeCurrencySymbol])
+
+  // Send transaction function for ThirdWeb
+  const sendTransaction = async (
+    request: TransactionRequest
+  ): Promise<`0x${string}`> => {
+    if (!thirdwebAccount) throw new Error('No active ThirdWeb account')
+    if (!activeChain) throw new Error('No active chain')
+
+    const { sendTransaction: thirdwebSendTransaction } = await import(
+      'thirdweb'
+    )
+    const { prepareTransaction } = await import('thirdweb')
+
+    const transaction = prepareTransaction({
+      to: request.to,
+      data: request.data,
+      value: request.value,
+      gas: request.gas,
+      chain: activeChain,
+      client: thirdwebClient
+    })
+
+    const result = await thirdwebSendTransaction({
+      transaction,
+      account: thirdwebAccount
+    })
+
+    return result.transactionHash as `0x${string}`
+  }
+
   const contextValue: BlockchainContextValue = {
     address: thirdwebAccount?.address,
     isConnected: !!thirdwebAccount,
-    balance: undefined,
-    formattedBalance: `0 ${nativeCurrencySymbol}`,
+    balance: nativeBalance,
+    formattedBalance: nativeBalance
+      ? `${nativeBalance.formatted} ${nativeBalance.symbol}`
+      : `0 ${nativeCurrencySymbol}`,
     disconnect: () => {
       if (thirdwebWallet) {
         thirdwebDisconnect(thirdwebWallet)
@@ -127,9 +226,11 @@ function ThirdwebBlockchainProvider({ children }: { children: ReactNode }) {
       }
       throw new Error('Chain switching not supported')
     },
+    sendTransaction,
     onAddressChange: callback => {
       addressChangeCallbackRef.current = callback
-    }
+    },
+    nativeBalance
   }
 
   return (
@@ -182,6 +283,23 @@ function WagmiBlockchainProvider({ children }: { children: ReactNode }) {
     }
   }, [wagmiAccount?.address])
 
+  // Send transaction function for Wagmi
+  const sendTransaction = async (
+    request: TransactionRequest
+  ): Promise<`0x${string}`> => {
+    if (!walletClient) throw new Error('No wallet client available')
+
+    return await walletClient.sendTransaction({
+      to: request.to,
+      data: request.data,
+      value: request.value,
+      gas: request.gas,
+      gasPrice: request.gasPrice,
+      account: request.account || wagmiAccount?.address,
+      chain: request.chain || walletClient.chain
+    })
+  }
+
   const contextValue: BlockchainContextValue = {
     address: wagmiAccount?.address,
     isConnected: wagmiAccount?.isConnected || false,
@@ -206,9 +324,18 @@ function WagmiBlockchainProvider({ children }: { children: ReactNode }) {
           await switchChainAsync({ chainId })
         }
       : undefined,
+    sendTransaction: walletClient ? sendTransaction : undefined,
     onAddressChange: callback => {
       addressChangeCallbackRef.current = callback
-    }
+    },
+    nativeBalance: balanceData
+      ? {
+          value: balanceData.value,
+          decimals: balanceData.decimals,
+          symbol: balanceData.symbol,
+          formatted: formatUnits(balanceData.value, balanceData.decimals)
+        }
+      : undefined
   }
 
   return (
@@ -249,7 +376,8 @@ export function useUnifiedWalletInfo() {
     balance,
     formattedBalance,
     disconnect,
-    onAddressChange
+    onAddressChange,
+    nativeBalance
   } = useBlockchain()
   return {
     address,
@@ -257,11 +385,22 @@ export function useUnifiedWalletInfo() {
     balance,
     formattedBalance,
     disconnect,
-    onAddressChange
+    onAddressChange,
+    nativeBalance
   }
 }
 
 export function useUnifiedChainInfo() {
   const { chainId } = useBlockchain()
   return { chainId }
+}
+
+export function useUnifiedBalance() {
+  const { nativeBalance } = useBlockchain()
+  return { data: nativeBalance }
+}
+
+export function useUnifiedWalletClient() {
+  const { walletClient, sendTransaction } = useBlockchain()
+  return { data: walletClient, sendTransaction }
 }
