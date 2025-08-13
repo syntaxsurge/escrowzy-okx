@@ -46,7 +46,12 @@ import { apiEndpoints } from '@/config/api-endpoints'
 import { useBlockchain } from '@/context'
 import { useEscrow } from '@/hooks/blockchain/use-escrow'
 import { useToast } from '@/hooks/use-toast'
+import { getCryptoPrice } from '@/lib/api/coingecko'
 import { api } from '@/lib/api/http-client'
+import {
+  getCoingeckoPriceId,
+  getNativeCurrencyDecimals
+} from '@/lib/blockchain'
 import { handleFormError } from '@/lib/utils/form'
 import { formatCurrency } from '@/lib/utils/string'
 import { getUserDisplayName } from '@/lib/utils/user'
@@ -353,10 +358,18 @@ export function TradeActionDialog({
               const sellerAddress =
                 trade.seller?.walletAddress || trade.sellerId
 
+              // Convert USD amount to native currency
+              const coingeckoId = getCoingeckoPriceId(trade.chainId)
+              const nativePrice = await getCryptoPrice(coingeckoId)
+              const usdAmount = parseFloat(trade.amount)
+              const nativeAmount = (usdAmount / nativePrice).toFixed(
+                getNativeCurrencyDecimals(trade.chainId)
+              )
+
               // Create and fund escrow in one transaction
               const createResult = await createEscrow({
                 seller: sellerAddress as string, // Domain seller will receive payment
-                amount: trade.amount,
+                amount: nativeAmount, // Use converted native amount instead of USD
                 disputeWindow: 7 * 24 * 60 * 60, // 7 days
                 metadata: `Domain Trade #${trade.id}`,
                 autoFund: true // Fund in the same transaction
