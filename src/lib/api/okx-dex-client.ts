@@ -1,5 +1,3 @@
-import crypto from 'crypto'
-
 import { unstable_cache } from 'next/cache'
 
 import { NATIVE_TOKEN_ADDRESS, ZERO_ADDRESS } from 'thirdweb'
@@ -24,6 +22,7 @@ import type {
 } from '@/types/okx-dex'
 
 import { OKXDexAPI } from './okx-dex-api'
+import { OKXDexAPIClient } from './okx-dex-api-client'
 
 // Cache configuration
 const CACHE_DURATION = {
@@ -34,10 +33,15 @@ const CACHE_DURATION = {
 } as const
 
 /**
- * OKX DEX Client with helper methods and caching
- * Extends the base API class for additional functionality
+ * Determine which base class to use based on environment
  */
-export class OKXDexClient extends OKXDexAPI {
+const BaseAPIClass = typeof window === 'undefined' ? OKXDexAPI : OKXDexAPIClient
+
+/**
+ * OKX DEX Client with helper methods and caching
+ * Extends the appropriate base API class based on environment
+ */
+export class OKXDexClient extends (BaseAPIClass as typeof OKXDexAPI) {
   private static instance: OKXDexClient | null = null
   private queueManager: OKXQueueManager | null = null
   private serverQueue: OKXServerQueue | null = null
@@ -400,6 +404,11 @@ export class OKXDexClient extends OKXDexAPI {
     requestPath: string,
     body?: string
   ): string {
+    // Only generate signatures on server-side
+    if (typeof window !== 'undefined') {
+      return ''
+    }
+
     if (!this.apiSecret) {
       return ''
     }
@@ -410,6 +419,8 @@ export class OKXDexClient extends OKXDexAPI {
       timestamp + method.toUpperCase() + requestPath + (body || '')
 
     try {
+      // Dynamic import for server-side only
+      const crypto = require('crypto')
       const hmac = crypto.createHmac('sha256', this.apiSecret)
       hmac.update(message)
       return hmac.digest('base64')
@@ -420,13 +431,38 @@ export class OKXDexClient extends OKXDexAPI {
   }
 
   /**
-   * Makes a request to the OKX API
+   * Makes a request to the OKX API or our API routes
    */
   protected async request<T>(
     endpoint: string,
     config?: OKXRequestConfig
   ): Promise<T> {
-    // Use queue manager on client side
+    // On client-side, use our API routes
+    if (typeof window !== 'undefined') {
+      const url = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+      const options: RequestInit = {
+        method: config?.method || 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...config?.headers
+        }
+      }
+
+      if (config?.body) {
+        options.body = JSON.stringify(config.body)
+      }
+
+      const response = await fetch(url, options)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'API request failed')
+      }
+
+      return data
+    }
+
+    // Use queue manager on client side (this won't be reached due to the check above)
     const queueManager = this.getQueueManager()
 
     if (queueManager && typeof window !== 'undefined') {

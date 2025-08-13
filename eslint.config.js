@@ -1,4 +1,5 @@
 import eslintPluginNext from '@next/eslint-plugin-next'
+
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import typescriptParser from '@typescript-eslint/parser'
 import eslintConfigPrettier from 'eslint-config-prettier'
