@@ -23,9 +23,9 @@ export const blockchainConfig: BlockchainConfig = {
       coingeckoId: 'ethereum',
       isTestnet: true,
       contractAddresses: {
-        subscriptionManager: '',
-        escrowCore: '',
-        achievementNFT: ''
+        subscriptionManager: '0x9C2d41Cbde1e37A0d9C7e769594cCbc84d486835',
+        escrowCore: '0xA099937F48BEecd170EDdF20F66eb738F54d9b63',
+        achievementNFT: '0x79Dc4fbF279862ef631c01d6937A6fC31dfa6e2f'
       }
     },
     base: {

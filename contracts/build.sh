@@ -47,6 +47,9 @@ if [ $? -eq 0 ]; then
     cp -f out/AchievementNFT.sol/AchievementNFT.json ../contracts/abi/AchievementNFT.json
     cp -f out/EscrowCore.sol/EscrowCore.json ../contracts/abi/EscrowCore.json
     cp -f out/SubscriptionManager.sol/SubscriptionManager.json ../contracts/abi/SubscriptionManager.json
+
+    # Format the ABIs
+    pnpm lint:all
     
     echo "ABIs copied successfully."
 else
