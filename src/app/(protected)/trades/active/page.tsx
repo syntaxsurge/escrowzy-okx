@@ -475,11 +475,18 @@ export default function ActiveTradesPage() {
                     ) {
                       return 'Deposit crypto to escrow to proceed with trade'
                     }
-                    if (
-                      trade.status === 'funded' &&
-                      trade.buyerId === user?.id
-                    ) {
-                      return 'Send payment to seller via agreed payment method'
+                    if (trade.status === 'funded') {
+                      // For domain trades: seller marks domain as transferred
+                      // For P2P trades: buyer marks payment as sent
+                      if (trade.listingCategory === 'domain') {
+                        if (trade.sellerId === user?.id) {
+                          return 'Mark domain as transferred to admin'
+                        }
+                      } else {
+                        if (trade.buyerId === user?.id) {
+                          return 'Send payment to seller via agreed payment method'
+                        }
+                      }
                     }
                     if (
                       trade.status === 'payment_sent' &&

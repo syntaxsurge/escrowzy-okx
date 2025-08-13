@@ -986,9 +986,20 @@ export async function markPaymentSent(input: {
       return { success: false, error: 'Trade not found' }
     }
 
-    // Check if user is the buyer
-    if (trade.buyerId !== input.userId) {
-      return { success: false, error: 'Only buyer can mark payment as sent' }
+    // Check if user has permission to mark payment/transfer as sent
+    // For domain trades: seller marks domain transfer
+    // For P2P trades: buyer marks payment sent
+    if (trade.listingCategory === 'domain') {
+      if (trade.sellerId !== input.userId) {
+        return {
+          success: false,
+          error: 'Only seller can mark domain as transferred'
+        }
+      }
+    } else {
+      if (trade.buyerId !== input.userId) {
+        return { success: false, error: 'Only buyer can mark payment as sent' }
+      }
     }
 
     // Check trade status

@@ -45,12 +45,12 @@ export function TradeTable({ trades, onUpdate }: TradeTableProps) {
   )
   const [actionDialogOpen, setActionDialogOpen] = useState(false)
   const [actionType, setActionType] = useState<
-    'fund' | 'confirm' | 'dispute' | null
+    'fund' | 'confirm' | 'dispute' | 'payment_sent' | null
   >(null)
 
   const handleAction = (
     trade: TradeWithUsers,
-    action: 'fund' | 'confirm' | 'dispute'
+    action: 'fund' | 'confirm' | 'dispute' | 'payment_sent'
   ) => {
     setSelectedTrade(trade)
     setActionType(action)
@@ -148,13 +148,20 @@ export function TradeTable({ trades, onUpdate }: TradeTableProps) {
                             Fund Escrow
                           </DropdownMenuItem>
                         )}
-                        {trade.status === 'funded' && !isBuyer && (
-                          <DropdownMenuItem
-                            onClick={() => handleAction(trade, 'confirm')}
-                          >
-                            Confirm Delivery
-                          </DropdownMenuItem>
-                        )}
+                        {trade.status === 'funded' &&
+                          ((trade.listingCategory === 'domain' && !isBuyer) ||
+                            (trade.listingCategory !== 'domain' &&
+                              isBuyer)) && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleAction(trade, 'payment_sent')
+                              }
+                            >
+                              {trade.listingCategory === 'domain'
+                                ? 'Mark Domain Transferred'
+                                : 'Mark Payment Sent'}
+                            </DropdownMenuItem>
+                          )}
                         {trade.status === 'delivered' && isBuyer && (
                           <DropdownMenuItem
                             onClick={() => handleAction(trade, 'confirm')}
