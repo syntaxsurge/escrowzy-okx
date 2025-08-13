@@ -24,7 +24,7 @@ interface OKXGasPriceResponse {
     min?: string
     max?: string
     supportEip1559?: boolean
-    erc1599Protocol?: {
+    eip1559Protocol?: {
       suggestBaseFee: string
       baseFee: string
       proposePriorityFee: string
@@ -147,24 +147,33 @@ async function fetchOKXGasPrice(chainIndex: string): Promise<GasPrice | null> {
 
     // Check if it's an EVM chain (has normal/min/max fields)
     if (gasPriceData.normal && gasPriceData.min && gasPriceData.max) {
-      // Convert from wei to gwei for consistency
-      const weiToGwei = (wei: string) => (BigInt(wei) / BigInt(1e9)).toString()
+      // Convert from wei to gwei - use proper decimal conversion
+      const weiToGwei = (wei: string) => {
+        const weiNum = BigInt(wei)
+        const gweiWhole = weiNum / BigInt(1e9)
+        const gweiRemainder = weiNum % BigInt(1e9)
+        // Return with 2 decimal places for precision
+        const decimal = ((gweiRemainder * BigInt(100)) / BigInt(1e9))
+          .toString()
+          .padStart(2, '0')
+        return gweiWhole > 0 ? `${gweiWhole}.${decimal}` : `0.${decimal}`
+      }
 
       const gasPrice: GasPrice = {
         slow: weiToGwei(gasPriceData.min),
         average: weiToGwei(gasPriceData.normal),
         fast: weiToGwei(gasPriceData.max),
-        baseFee: gasPriceData.erc1599Protocol?.baseFee
-          ? weiToGwei(gasPriceData.erc1599Protocol.baseFee)
+        baseFee: gasPriceData.eip1559Protocol?.baseFee
+          ? weiToGwei(gasPriceData.eip1559Protocol.baseFee)
           : weiToGwei(gasPriceData.min)
       }
 
       // Add EIP-1559 priority fees if available
-      if (gasPriceData.supportEip1559 && gasPriceData.erc1599Protocol) {
+      if (gasPriceData.supportEip1559 && gasPriceData.eip1559Protocol) {
         gasPrice.priority = {
-          low: weiToGwei(gasPriceData.erc1599Protocol.safePriorityFee),
-          medium: weiToGwei(gasPriceData.erc1599Protocol.proposePriorityFee),
-          high: weiToGwei(gasPriceData.erc1599Protocol.fastPriorityFee)
+          low: weiToGwei(gasPriceData.eip1559Protocol.safePriorityFee),
+          medium: weiToGwei(gasPriceData.eip1559Protocol.proposePriorityFee),
+          high: weiToGwei(gasPriceData.eip1559Protocol.fastPriorityFee)
         }
       }
 
