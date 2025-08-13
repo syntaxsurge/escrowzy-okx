@@ -205,6 +205,7 @@ export const apiEndpoints = {
     preview: '/api/fees/preview'
   },
   swap: {
+    chains: '/api/swap/chains',
     balances: '/api/swap/balances',
     tokens: '/api/swap/tokens',
     quote: '/api/swap/quote',

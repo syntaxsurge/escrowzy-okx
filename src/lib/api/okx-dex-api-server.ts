@@ -28,7 +28,7 @@ import type {
  * Abstract base class for OKX DEX API interactions
  * Contains only pure API endpoint methods
  */
-export abstract class OKXDexAPI {
+export abstract class OKXDexAPIServer {
   protected readonly baseUrl: string
   protected readonly basePath: string
   protected readonly apiKey?: string

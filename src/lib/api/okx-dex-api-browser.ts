@@ -1,3 +1,4 @@
+import { apiEndpoints } from '@/config/api-endpoints'
 import type {
   OKXBaseResponse,
   OKXTokenInfo,
@@ -17,14 +18,14 @@ import type {
  * This version doesn't import any server-only dependencies
  * It relies on API routes for actual OKX communication
  */
-export abstract class OKXDexAPIClient {
+export abstract class OKXDexAPIBrowser {
   protected readonly baseUrl: string
   protected readonly basePath: string
 
   constructor() {
     // For client-side, we'll use our API routes instead of direct OKX access
     this.baseUrl = ''
-    this.basePath = '/api'
+    this.basePath = ''
   }
 
   /**
@@ -39,7 +40,7 @@ export abstract class OKXDexAPIClient {
   public async getSupportedChains(): Promise<
     OKXBaseResponse<{ chains: OKXChain[] }>
   > {
-    return this.request('/swap/chains')
+    return this.request(apiEndpoints.swap.chains)
   }
 
   /**
@@ -48,7 +49,7 @@ export abstract class OKXDexAPIClient {
   public async getAllTokens(
     chainId: string
   ): Promise<{ tokens: OKXTokenInfo[] }> {
-    return this.request('/swap/all-tokens', {
+    return this.request(apiEndpoints.swap.allTokens, {
       method: 'POST',
       body: { chainId: parseInt(chainId) }
     })
@@ -64,7 +65,7 @@ export abstract class OKXDexAPIClient {
     const response = await this.request<{
       success: boolean
       tokens: OKXTokenInfo[]
-    }>('/swap/tokens', {
+    }>(apiEndpoints.swap.tokens, {
       method: 'POST',
       body: { chainId: parseInt(chainId), query }
     })
@@ -78,7 +79,7 @@ export abstract class OKXDexAPIClient {
     address: string,
     chainId: string
   ): Promise<OKXBaseResponse<{ balances: OKXBalanceInfo[] }>> {
-    return this.request('/swap/balances', {
+    return this.request(apiEndpoints.swap.balances, {
       method: 'POST',
       body: { walletAddress: address, chainId: parseInt(chainId) }
     })
@@ -90,7 +91,7 @@ export abstract class OKXDexAPIClient {
   public async getLiquiditySources(
     chainId: string
   ): Promise<OKXBaseResponse<{ liquiditySources: OKXLiquiditySource[] }>> {
-    return this.request('/swap/liquidity', {
+    return this.request(apiEndpoints.swap.liquidity, {
       method: 'POST',
       body: { chainId: parseInt(chainId) }
     })
@@ -104,7 +105,7 @@ export abstract class OKXDexAPIClient {
     chainId: string
   ): Promise<any> {
     const response = await this.request<{ success: boolean; data: any }>(
-      '/swap/price',
+      apiEndpoints.swap.price,
       {
         method: 'POST',
         body: { tokenAddress, chainId: parseInt(chainId) }
@@ -134,7 +135,7 @@ export abstract class OKXDexAPIClient {
    * Get swap quote
    */
   public async getQuote(request: OKXQuoteRequest): Promise<OKXQuoteResponse> {
-    return this.request('/swap/quote', {
+    return this.request(apiEndpoints.swap.quote, {
       method: 'POST',
       body: {
         fromToken: request.fromTokenAddress,
@@ -150,7 +151,7 @@ export abstract class OKXDexAPIClient {
    * Get swap transaction data
    */
   public async getSwapData(request: OKXSwapRequest): Promise<OKXSwapResponse> {
-    return this.request('/swap/execute', {
+    return this.request(apiEndpoints.swap.execute, {
       method: 'POST',
       body: {
         fromToken: request.fromTokenAddress,
@@ -169,7 +170,7 @@ export abstract class OKXDexAPIClient {
   public async getApproveTransaction(
     request: OKXApproveRequest
   ): Promise<OKXApproveResponse> {
-    return this.request('/swap/approve', {
+    return this.request(apiEndpoints.swap.approve, {
       method: 'POST',
       body: {
         chainId: parseInt(request.chainIndex),

@@ -21,8 +21,8 @@ import type {
   OKXRequestConfig
 } from '@/types/okx-dex'
 
-import { OKXDexAPI } from './okx-dex-api'
-import { OKXDexAPIClient } from './okx-dex-api-client'
+import { OKXDexAPIBrowser } from './okx-dex-api-browser'
+import { OKXDexAPIServer } from './okx-dex-api-server'
 
 // Cache configuration
 const CACHE_DURATION = {
@@ -35,13 +35,13 @@ const CACHE_DURATION = {
 /**
  * Determine which base class to use based on environment
  */
-const BaseAPIClass = typeof window === 'undefined' ? OKXDexAPI : OKXDexAPIClient
+const BaseAPIClass = typeof window === 'undefined' ? OKXDexAPIServer : OKXDexAPIBrowser
 
 /**
  * OKX DEX Client with helper methods and caching
  * Extends the appropriate base API class based on environment
  */
-export class OKXDexClient extends (BaseAPIClass as typeof OKXDexAPI) {
+export class OKXDexClient extends (BaseAPIClass as typeof OKXDexAPIServer) {
   private static instance: OKXDexClient | null = null
   private queueManager: OKXQueueManager | null = null
   private serverQueue: OKXServerQueue | null = null
