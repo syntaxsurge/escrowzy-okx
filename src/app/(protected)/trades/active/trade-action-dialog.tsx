@@ -51,6 +51,7 @@ import { useToast } from '@/hooks/use-toast'
 import { api } from '@/lib/api/http-client'
 import { handleFormError } from '@/lib/utils/form'
 import { formatCurrency } from '@/lib/utils/string'
+import { uploadClient } from '@/lib/utils/upload-client'
 import { getUserDisplayName } from '@/lib/utils/user'
 import type { TradeWithUsers, TradeMetadata } from '@/types/trade'
 
@@ -436,40 +437,42 @@ export function TradeActionDialog({
           break
 
         case 'payment_sent':
-          // First upload payment proof if files are selected
+          // First upload proof if files are selected
           if (paymentProofFiles.length > 0) {
             setUploadingProof(true)
             try {
-              const formData = new FormData()
-              paymentProofFiles.forEach(file => {
-                formData.append('files', file)
-              })
-
-              const uploadResponse = await fetch(
-                apiEndpoints.trades.paymentProof(trade.id),
+              // Use centralized upload client
+              const uploadResult = await uploadClient.uploadFiles(
+                paymentProofFiles,
                 {
-                  method: 'POST',
-                  body: formData,
-                  credentials: 'include'
+                  uploadType:
+                    trade.listingCategory === 'domain'
+                      ? 'DOMAIN_TRANSFER_PROOFS'
+                      : 'PAYMENT_PROOFS',
+                  context: `trade-${trade.id}`,
+                  onProgress: progress => {
+                    console.log(`Upload progress: ${progress}%`)
+                  }
                 }
               )
 
-              if (!uploadResponse.ok) {
-                throw new Error('Failed to upload payment proof')
+              if (!uploadResult.success) {
+                throw new Error(uploadResult.error || 'Failed to upload proof')
               }
-
-              const uploadResult = await uploadResponse.json()
 
               // Now mark payment as sent
               endpoint = apiEndpoints.trades.paymentSent(trade.id)
               payload = {
-                paymentProof: uploadResult.images?.join(',') || '',
+                paymentProof: uploadResult.urls?.join(',') || '',
                 notes: data.notes
               }
               method = 'POST'
-            } catch (uploadError) {
+            } catch (uploadError: any) {
               console.error('Upload error:', uploadError)
-              throw new Error('Failed to upload payment proof')
+              // Show more specific error message
+              const errorMessage =
+                uploadError.message || 'Failed to upload proof'
+              throw new Error(errorMessage)
             } finally {
               setUploadingProof(false)
             }
@@ -540,37 +543,40 @@ export function TradeActionDialog({
           if (disputeEvidenceFiles.length > 0) {
             setUploadingProof(true)
             try {
-              const formData = new FormData()
-              disputeEvidenceFiles.forEach(file => {
-                formData.append('files', file)
-              })
-
-              const uploadResponse = await fetch(
-                apiEndpoints.trades.disputeEvidence(trade.id),
+              // Use centralized upload client for dispute evidence
+              const uploadResult = await uploadClient.uploadFiles(
+                disputeEvidenceFiles,
                 {
-                  method: 'POST',
-                  body: formData,
-                  credentials: 'include'
+                  uploadType: 'DISPUTE_EVIDENCE',
+                  context: `trade-${trade.id}`,
+                  onProgress: progress => {
+                    console.log(
+                      `Dispute evidence upload progress: ${progress}%`
+                    )
+                  }
                 }
               )
 
-              if (!uploadResponse.ok) {
-                throw new Error('Failed to upload evidence')
+              if (!uploadResult.success) {
+                throw new Error(
+                  uploadResult.error || 'Failed to upload evidence'
+                )
               }
-
-              const uploadResult = await uploadResponse.json()
 
               // Now raise dispute with uploaded evidence
               endpoint = apiEndpoints.trades.dispute(trade.id)
               payload = {
                 reason: data.reason,
                 evidence: data.evidence,
-                evidenceImages: uploadResult.images?.join(',') || ''
+                evidenceImages: uploadResult.urls?.join(',') || ''
               }
               method = 'POST'
-            } catch (uploadError) {
+            } catch (uploadError: any) {
               console.error('Upload error:', uploadError)
-              throw new Error('Failed to upload evidence')
+              // Show more specific error message
+              const errorMessage =
+                uploadError.message || 'Failed to upload evidence'
+              throw new Error(errorMessage)
             } finally {
               setUploadingProof(false)
             }
@@ -1039,6 +1045,11 @@ export function TradeActionDialog({
                       maxFiles={3}
                       required
                       disabled={isSubmitting || uploadingProof}
+                      label={
+                        trade.listingCategory === 'domain'
+                          ? 'Upload Domain Transfer Proof'
+                          : 'Upload Payment Proof'
+                      }
                     />
                     <FormDescription>
                       {trade.listingCategory === 'domain'

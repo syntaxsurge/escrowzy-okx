@@ -43,23 +43,51 @@ export async function processUploadedFile(
 
   const relativePath = path.join(...pathSegments, safeFilename)
 
-  if (isVercel && process.env.BLOB_READ_WRITE_TOKEN) {
-    // Use Vercel Blob storage in production
-    const blob = await put(relativePath, buffer, {
-      access: 'public',
-      contentType: detectedMimeType,
-      addRandomSuffix: false
-    })
+  if (isVercel) {
+    // Check if Blob token is configured
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error(
+        'File storage is not configured. BLOB_READ_WRITE_TOKEN is missing. Please contact support.'
+      )
+    }
 
-    return {
-      buffer,
-      filename: safeFilename,
-      originalName: file.name,
-      mimeType: detectedMimeType,
-      size: file.size,
-      extension: fileExt,
-      relativePath: blob.url, // Store the blob URL as relativePath for consistency
-      absolutePath: blob.url // Also store as absolutePath for backward compatibility
+    // Use Vercel Blob storage in production
+    try {
+      const blob = await put(relativePath, buffer, {
+        access: 'public',
+        contentType: detectedMimeType,
+        addRandomSuffix: false
+      })
+
+      return {
+        buffer,
+        filename: safeFilename,
+        originalName: file.name,
+        mimeType: detectedMimeType,
+        size: file.size,
+        extension: fileExt,
+        relativePath: blob.url, // Store the blob URL as relativePath for consistency
+        absolutePath: blob.url // Also store as absolutePath for backward compatibility
+      }
+    } catch (blobError: any) {
+      // Handle specific Vercel Blob errors
+      if (blobError.message?.includes('Unauthorized')) {
+        throw new Error(
+          'File storage authentication failed. Please check BLOB_READ_WRITE_TOKEN configuration.'
+        )
+      }
+      if (
+        blobError.message?.includes('NetworkError') ||
+        blobError.message?.includes('fetch')
+      ) {
+        throw new Error(
+          'Network error while uploading to storage. Please check your connection and try again.'
+        )
+      }
+      // Re-throw with more context
+      throw new Error(
+        `Failed to upload to storage: ${blobError.message || 'Unknown error'}`
+      )
     }
   } else {
     // Use filesystem storage in development

@@ -17,6 +17,8 @@ interface PaymentProofUploadProps {
   className?: string
   disabled?: boolean
   required?: boolean
+  label?: string
+  description?: string
 }
 
 export function PaymentProofUpload({
@@ -25,7 +27,9 @@ export function PaymentProofUpload({
   maxFileSize = 10 * 1024 * 1024, // 10MB default
   className,
   disabled = false,
-  required = false
+  required = false,
+  label = 'Upload Payment Proof',
+  description = 'Click to upload or drag and drop'
 }: PaymentProofUploadProps) {
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
@@ -171,7 +175,7 @@ export function PaymentProofUpload({
             <div className='text-center'>
               <p className='font-medium'>
                 {files.length === 0
-                  ? 'Upload Payment Proof'
+                  ? label
                   : files.length < maxFiles
                     ? 'Add More Screenshots'
                     : 'Maximum files reached'}

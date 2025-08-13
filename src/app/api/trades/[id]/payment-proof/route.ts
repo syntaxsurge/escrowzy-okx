@@ -7,7 +7,7 @@ import { sendMessageAction } from '@/lib/actions/chat'
 import { getCurrentUserAction } from '@/lib/actions/user'
 import { db } from '@/lib/db/drizzle'
 import { trades, users } from '@/lib/db/schema'
-import { processUploadedFile, getUploadUrl } from '@/lib/utils/upload'
+import { uploadService } from '@/services/upload'
 import type { TradeMetadata } from '@/types/trade'
 
 export async function POST(
@@ -62,37 +62,26 @@ export async function POST(
       )
     }
 
-    // Process uploaded images
-    const uploadedImages: string[] = []
-    const maxFileSize = 10 * 1024 * 1024 // 10MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    // Determine upload type based on trade category
+    const uploadType =
+      trade.trade.listingCategory === 'domain'
+        ? 'DOMAIN_TRANSFER_PROOFS'
+        : 'PAYMENT_PROOFS'
 
-    for (const file of files) {
-      if (file.size > maxFileSize) {
-        return NextResponse.json(
-          { error: `File ${file.name} exceeds 10MB limit` },
-          { status: 400 }
-        )
-      }
+    // Process uploaded images using centralized service
+    const uploadResult = await uploadService.uploadFiles(files, {
+      uploadType: uploadType as keyof typeof uploadConstants.UPLOAD_TYPES,
+      subPath: `trade-${tradeId}`
+    })
 
-      // Validate file type
-      const fileType = file.type.toLowerCase()
-      if (!allowedTypes.includes(fileType)) {
-        return NextResponse.json(
-          {
-            error: `File ${file.name} must be an image (JPEG, PNG, GIF, or WebP)`
-          },
-          { status: 400 }
-        )
-      }
-
-      const processedFile = await processUploadedFile(file, {
-        uploadType: uploadConstants.UPLOAD_TYPES.PAYMENT_PROOFS,
-        subPath: `trade-${tradeId}`
-      })
-
-      uploadedImages.push(getUploadUrl(processedFile.relativePath))
+    if (!uploadResult.success) {
+      return NextResponse.json(
+        { error: uploadResult.error || 'Failed to upload files' },
+        { status: 400 }
+      )
     }
+
+    const uploadedImages = uploadResult.urls || []
 
     // Update trade metadata with payment proof images
     const currentMetadata = (trade.trade.metadata as TradeMetadata) || {}

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUserAction } from '@/lib/actions/user'
 import { db } from '@/lib/db/drizzle'
 import { attachments } from '@/lib/db/schema'
-import { processUploadedFile, getUploadUrl } from '@/lib/utils/upload'
+import { uploadService } from '@/services/upload'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +27,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Upload files using centralized service
+    const uploadResult = await uploadService.uploadFiles(files, {
+      uploadType: 'ATTACHMENTS',
+      subPath: `message-${messageId}`
+    })
+
+    if (!uploadResult.success) {
+      return NextResponse.json(
+        { error: uploadResult.error || 'Failed to upload files' },
+        { status: 400 }
+      )
+    }
+
     const uploadedFiles: Array<{
       id: number
       filename: string
@@ -35,20 +48,21 @@ export async function POST(request: NextRequest) {
       url: string
     }> = []
 
-    for (const file of files) {
-      const processedFile = await processUploadedFile(file, {
-        uploadType: 'attachments'
-      })
+    // Save attachment records to database
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const url = uploadResult.urls![i]
+      const details = uploadResult.details![i]
 
       const [attachment] = await db
         .insert(attachments)
         .values({
           messageId: parseInt(messageId),
           userId: user.id,
-          filename: processedFile.originalName,
-          mimeType: processedFile.mimeType,
-          path: processedFile.relativePath,
-          size: processedFile.size
+          filename: file.name,
+          mimeType: details.mimeType,
+          path: url,
+          size: file.size
         })
         .returning()
 
@@ -57,7 +71,7 @@ export async function POST(request: NextRequest) {
         filename: attachment.filename,
         mimeType: attachment.mimeType,
         size: attachment.size,
-        url: getUploadUrl(processedFile.relativePath)
+        url
       })
     }
 

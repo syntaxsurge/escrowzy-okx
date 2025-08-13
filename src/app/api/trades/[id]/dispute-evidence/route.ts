@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 
-import { uploadConstants } from '@/config/business-constants'
 import { getSession } from '@/lib/auth/session'
-import { processUploadedFile, getUploadUrl } from '@/lib/utils/upload'
 import { getTradeWithUsers } from '@/services/trade'
+import { uploadService } from '@/services/upload'
 
 export async function POST(
   request: Request,
@@ -56,38 +55,23 @@ export async function POST(
       )
     }
 
-    // Process uploaded images using centralized utility
-    const uploadedImages: string[] = []
-    const maxFileSize = 10 * 1024 * 1024 // 10MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    // Process uploaded images using centralized service
+    const uploadResult = await uploadService.uploadFiles(files, {
+      uploadType: 'DISPUTE_EVIDENCE',
+      subPath: `trade-${tradeId}`
+    })
 
-    for (const file of files) {
-      if (file.size > maxFileSize) {
-        return NextResponse.json(
-          { success: false, error: `File ${file.name} exceeds 10MB limit` },
-          { status: 400 }
-        )
-      }
-
-      // Validate file type
-      const fileType = file.type.toLowerCase()
-      if (!allowedTypes.includes(fileType)) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `File ${file.name} must be an image (JPEG, PNG, GIF, or WebP)`
-          },
-          { status: 400 }
-        )
-      }
-
-      const processedFile = await processUploadedFile(file, {
-        uploadType: uploadConstants.UPLOAD_TYPES.DISPUTE_EVIDENCE,
-        subPath: `trade-${tradeId}`
-      })
-
-      uploadedImages.push(getUploadUrl(processedFile.relativePath))
+    if (!uploadResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: uploadResult.error || 'Failed to upload files'
+        },
+        { status: 400 }
+      )
     }
+
+    const uploadedImages = uploadResult.urls || []
 
     return NextResponse.json({
       success: true,

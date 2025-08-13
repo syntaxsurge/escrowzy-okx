@@ -1,7 +1,13 @@
 import { apiEndpoints } from '@/config/api-endpoints'
 
 export interface UploadConfig {
-  uploadType: 'attachments' | 'avatars' | 'payment-proofs' | 'dispute-evidence'
+  uploadType:
+    | 'attachments'
+    | 'avatars'
+    | 'payment-proofs'
+    | 'domain-transfer-proofs'
+    | 'dispute-evidence'
+    | string
   subPath?: string
 }
 

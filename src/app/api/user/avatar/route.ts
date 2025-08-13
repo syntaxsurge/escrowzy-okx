@@ -2,16 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { eq } from 'drizzle-orm'
 
-import { uploadConstants } from '@/config/business-constants'
 import { getCurrentUserAction } from '@/lib/actions/user'
 import { db } from '@/lib/db/drizzle'
 import { users } from '@/lib/db/schema'
-import { IMAGE_MIME_TYPES } from '@/lib/utils/file'
-import {
-  processUploadedFile,
-  getUploadUrl,
-  validateImageFile
-} from '@/lib/utils/upload'
+import { uploadService } from '@/services/upload'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,35 +21,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate the file
-    const validation = validateImageFile(file)
-    if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: 400 })
-    }
-
-    // Process and save the file
-    const processedFile = await processUploadedFile(file, {
-      uploadType: uploadConstants.UPLOAD_TYPES.AVATARS,
+    // Process and save the file using centralized service
+    const uploadResult = await uploadService.uploadFile(file, {
+      uploadType: 'AVATARS',
       subPath: `user-${user.id}`
     })
 
-    // Additional validation on processed file
-    if (!IMAGE_MIME_TYPES.includes(processedFile.mimeType)) {
-      return NextResponse.json({ error: 'Invalid image type' }, { status: 400 })
+    if (!uploadResult.success) {
+      return NextResponse.json(
+        { error: uploadResult.error || 'Failed to upload avatar' },
+        { status: 400 }
+      )
+    }
+
+    const avatarUrl = uploadResult.urls?.[0]
+    const fileDetails = uploadResult.details?.[0]
+
+    if (!avatarUrl || !fileDetails) {
+      return NextResponse.json(
+        { error: 'Failed to process avatar upload' },
+        { status: 500 }
+      )
     }
 
     // Update user's avatar path in database
     await db
       .update(users)
       .set({
-        avatarPath: processedFile.relativePath,
+        avatarPath: avatarUrl,
         updatedAt: new Date()
       })
       .where(eq(users.id, user.id))
 
     return NextResponse.json({
       success: true,
-      avatarUrl: getUploadUrl(processedFile.relativePath)
+      avatarUrl
     })
   } catch (error) {
     console.error('Avatar upload error:', error)

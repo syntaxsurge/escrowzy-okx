@@ -170,12 +170,14 @@ export const uploadConstants = {
   UPLOAD_PATHS: {
     AVATARS: '/uploads/avatars',
     PAYMENT_PROOFS: '/uploads/payment-proofs',
+    DOMAIN_TRANSFER_PROOFS: '/uploads/domain-transfer-proofs',
     DISPUTE_EVIDENCE: '/uploads/dispute-evidence',
     ATTACHMENTS: '/uploads/attachments'
   },
   UPLOAD_TYPES: {
     AVATARS: 'avatars',
     PAYMENT_PROOFS: 'payment-proofs',
+    DOMAIN_TRANSFER_PROOFS: 'domain-transfer-proofs',
     DISPUTE_EVIDENCE: 'dispute-evidence',
     ATTACHMENTS: 'attachments'
   }
