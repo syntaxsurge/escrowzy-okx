@@ -16,7 +16,8 @@ import {
   Trophy,
   Eye,
   ExternalLink,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Globe
 } from 'lucide-react'
 import useSWR from 'swr'
 import Lightbox from 'yet-another-react-lightbox'
@@ -165,14 +166,27 @@ export default function TradeDetailPage() {
       }
     }
 
-    if (trade.status === 'funded' && isBuyer) {
-      return {
-        action: 'payment_sent',
-        label: 'Mark Payment Sent',
-        icon: <DollarSign className='h-5 w-5' />,
-        variant: 'default' as const,
-        className:
-          'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0'
+    // For domain trades: seller marks domain transferred after buyer funds
+    // For P2P trades: buyer marks payment sent after seller deposits
+    if (trade.status === 'funded') {
+      if (trade.listingCategory === 'domain' && isSeller) {
+        return {
+          action: 'payment_sent',
+          label: 'Mark Domain Transferred to Admin',
+          icon: <Globe className='h-5 w-5' />,
+          variant: 'default' as const,
+          className:
+            'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0'
+        }
+      } else if (trade.listingCategory !== 'domain' && isBuyer) {
+        return {
+          action: 'payment_sent',
+          label: 'Mark Payment Sent',
+          icon: <DollarSign className='h-5 w-5' />,
+          variant: 'default' as const,
+          className:
+            'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0'
+        }
       }
     }
 

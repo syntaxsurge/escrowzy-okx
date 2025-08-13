@@ -10,7 +10,8 @@ import {
   Clock,
   Wallet,
   Image as ImageIcon,
-  Globe
+  Globe,
+  Mail
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import Lightbox from 'yet-another-react-lightbox'
@@ -43,6 +44,7 @@ import { LoadingButton } from '@/components/ui/loading-button'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { apiEndpoints } from '@/config/api-endpoints'
+import { envPublic } from '@/config/env.public'
 import { useBlockchain } from '@/context'
 import { useEscrow } from '@/hooks/blockchain/use-escrow'
 import { useToast } from '@/hooks/use-toast'
@@ -612,8 +614,14 @@ export function TradeActionDialog({
           })
         } else if (actionType === 'payment_sent') {
           toast({
-            title: 'Payment Marked as Sent',
-            description: 'The seller has been notified of your payment.',
+            title:
+              trade.listingCategory === 'domain'
+                ? 'Domain Transfer Initiated'
+                : 'Payment Marked as Sent',
+            description:
+              trade.listingCategory === 'domain'
+                ? 'Admin has been notified to verify the domain transfer.'
+                : 'The seller has been notified of your payment.',
             variant: 'default'
           })
         } else if (actionType === 'confirm') {
@@ -655,10 +663,14 @@ export function TradeActionDialog({
       case 'fund':
         return 'Fund Escrow'
       case 'payment_sent':
-        return 'Mark Payment as Sent'
+        return trade.listingCategory === 'domain'
+          ? 'Mark Domain Transferred'
+          : 'Mark Payment as Sent'
       case 'confirm':
         return trade.status === 'payment_sent'
-          ? 'Confirm Payment & Release Crypto'
+          ? trade.listingCategory === 'domain'
+            ? 'Confirm Domain Receipt & Release Payment'
+            : 'Confirm Payment & Release Crypto'
           : trade.status === 'funded'
             ? 'Confirm Delivery'
             : 'Confirm Receipt'
@@ -678,10 +690,14 @@ export function TradeActionDialog({
       case 'fund':
         return 'Send funds to the escrow smart contract to proceed with the trade'
       case 'payment_sent':
-        return 'Mark that you have sent the fiat payment to the seller'
+        return trade.listingCategory === 'domain'
+          ? 'Confirm that you have initiated the domain transfer to the buyer'
+          : 'Mark that you have sent the fiat payment to the seller'
       case 'confirm':
         return trade.status === 'payment_sent'
-          ? 'Confirm that you have received the fiat payment and release the crypto from escrow to the buyer. This will complete the trade.'
+          ? trade.listingCategory === 'domain'
+            ? 'Confirm that you have received the domain transfer and release the payment from escrow to the seller. This will complete the trade.'
+            : 'Confirm that you have received the fiat payment and release the crypto from escrow to the buyer. This will complete the trade.'
           : trade.status === 'funded'
             ? 'Confirm that you have delivered the goods/services to the buyer'
             : 'Confirm that you have received the goods/services from the seller'
@@ -903,37 +919,117 @@ export function TradeActionDialog({
 
               {actionType === 'payment_sent' && (
                 <>
-                  <Alert>
-                    <Shield className='h-4 w-4' />
-                    <AlertDescription>
-                      <div className='space-y-2'>
-                        <p>
-                          Send the fiat payment to the seller using the agreed
-                          payment method.
-                        </p>
-                        <div className='space-y-1 text-sm'>
-                          <div className='flex justify-between'>
-                            <span>Amount to Send:</span>
-                            <span className='font-medium'>
-                              {formatCurrency(trade.amount, 'USD')}
-                            </span>
+                  {trade.listingCategory === 'domain' ? (
+                    <>
+                      <Alert>
+                        <Globe className='h-4 w-4' />
+                        <AlertDescription>
+                          <div className='space-y-2'>
+                            <p className='font-medium'>
+                              Transfer the domain to our admin for verification
+                            </p>
+                            <div className='space-y-1 text-sm'>
+                              <div className='flex justify-between'>
+                                <span>Domain:</span>
+                                <span className='font-medium'>
+                                  {(trade.metadata as TradeMetadata)?.domainInfo
+                                    ?.domainName || 'N/A'}
+                                </span>
+                              </div>
+                              <div className='flex justify-between'>
+                                <span>Current Registrar:</span>
+                                <span className='font-medium'>
+                                  {(trade.metadata as TradeMetadata)?.domainInfo
+                                    ?.registrar || 'Unknown'}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className='flex justify-between'>
-                            <span>Payment Method:</span>
-                            <span className='font-medium'>
-                              {(trade.metadata as TradeMetadata)
-                                ?.paymentMethod || 'Bank Transfer'}
-                            </span>
+                        </AlertDescription>
+                      </Alert>
+
+                      <Alert className='border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20'>
+                        <Mail className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+                        <AlertDescription>
+                          <div className='space-y-2'>
+                            <p className='font-semibold text-blue-700 dark:text-blue-300'>
+                              Transfer to Admin Email:
+                            </p>
+                            <div className='rounded-md bg-white p-3 dark:bg-gray-900'>
+                              <p className='font-mono text-sm font-bold'>
+                                {envPublic.NEXT_PUBLIC_DOMAIN_ESCROW_EMAIL}
+                              </p>
+                            </div>
+                            <div className='space-y-1 text-xs text-blue-600 dark:text-blue-400'>
+                              <p>
+                                ℹ️ For security, domains are first transferred
+                                to our admin who verifies the transfer before
+                                sending to the buyer.
+                              </p>
+                              <p>📝 Steps:</p>
+                              <ol className='ml-4 list-decimal space-y-1'>
+                                <li>
+                                  Initiate transfer to the admin email above
+                                </li>
+                                <li>
+                                  Complete any verification steps from your
+                                  registrar
+                                </li>
+                                <li>Upload proof of transfer initiation</li>
+                                <li>Mark as transferred once initiated</li>
+                              </ol>
+                            </div>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+
+                      <Alert variant='default'>
+                        <Shield className='h-4 w-4' />
+                        <AlertDescription>
+                          <p className='text-sm'>
+                            The admin will verify the transfer and then send the
+                            domain to the buyer ({trade.buyer?.email || 'buyer'}
+                            ). Once confirmed, your payment will be released
+                            from escrow.
+                          </p>
+                        </AlertDescription>
+                      </Alert>
+                    </>
+                  ) : (
+                    <Alert>
+                      <Shield className='h-4 w-4' />
+                      <AlertDescription>
+                        <div className='space-y-2'>
+                          <p>
+                            Send the fiat payment to the seller using the agreed
+                            payment method.
+                          </p>
+                          <div className='space-y-1 text-sm'>
+                            <div className='flex justify-between'>
+                              <span>Amount to Send:</span>
+                              <span className='font-medium'>
+                                {formatCurrency(trade.amount, 'USD')}
+                              </span>
+                            </div>
+                            <div className='flex justify-between'>
+                              <span>Payment Method:</span>
+                              <span className='font-medium'>
+                                {(trade.metadata as TradeMetadata)
+                                  ?.paymentMethod || 'Bank Transfer'}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
-                  {/* Payment Proof Upload */}
+                  {/* Proof Upload */}
                   <div className='space-y-2'>
                     <FormLabel>
-                      Payment Proof Screenshot{' '}
+                      {trade.listingCategory === 'domain'
+                        ? 'Domain Transfer Proof'
+                        : 'Payment Proof Screenshot'}{' '}
                       <Badge variant='destructive' className='ml-1'>
                         Required
                       </Badge>
@@ -945,8 +1041,9 @@ export function TradeActionDialog({
                       disabled={isSubmitting || uploadingProof}
                     />
                     <FormDescription>
-                      Upload screenshots of your payment confirmation (bank
-                      transfer receipt, payment app screenshot, etc.)
+                      {trade.listingCategory === 'domain'
+                        ? `Upload screenshots showing the domain transfer has been initiated to ${envPublic.NEXT_PUBLIC_DOMAIN_ESCROW_EMAIL} (transfer request, confirmation email, registrar screenshot, etc.)`
+                        : 'Upload screenshots of your payment confirmation (bank transfer receipt, payment app screenshot, etc.)'}
                     </FormDescription>
                   </div>
 
@@ -976,8 +1073,9 @@ export function TradeActionDialog({
                   <Alert variant='destructive'>
                     <AlertCircle className='h-4 w-4' />
                     <AlertDescription>
-                      Only mark as sent after you have actually completed the
-                      payment. False claims may result in account suspension.
+                      {trade.listingCategory === 'domain'
+                        ? 'Only mark as transferred after you have actually initiated the domain transfer. False claims may result in account suspension.'
+                        : 'Only mark as sent after you have actually completed the payment. False claims may result in account suspension.'}
                     </AlertDescription>
                   </Alert>
                 </>
@@ -1432,7 +1530,10 @@ export function TradeActionDialog({
                         ? 'Processing Payment...'
                         : 'Send Payment'
                       : 'Confirm Funding')}
-                  {actionType === 'payment_sent' && 'Mark Payment as Sent'}
+                  {actionType === 'payment_sent' &&
+                    (trade.listingCategory === 'domain'
+                      ? 'Mark Domain Transferred to Admin'
+                      : 'Mark Payment as Sent')}
                   {actionType === 'confirm' &&
                     (trade.status === 'payment_sent' ? (
                       <span className='relative z-10 flex items-center gap-2'>
