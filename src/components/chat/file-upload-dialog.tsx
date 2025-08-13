@@ -147,7 +147,7 @@ export function FileUploadDialog({
 
       // Map uploaded files to expected format
       const uploadedFiles =
-        result.files?.map((file, index) => ({
+        result.files?.map(file => ({
           name: file.originalName,
           size: file.size,
           type: file.mimeType,

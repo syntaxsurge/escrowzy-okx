@@ -181,7 +181,7 @@ export function PaymentProofUpload({
                     : 'Maximum files reached'}
               </p>
               <p className='text-muted-foreground mt-1 text-sm'>
-                Drag & drop or click to browse
+                {description}
               </p>
               <p className='text-muted-foreground mt-2 text-xs'>
                 {required && 'Required • '}
