@@ -81,6 +81,24 @@ export default function CreateP2PListingPage() {
     }
   })
 
+  // Auto-select native currency when chain changes
+  useEffect(() => {
+    if (chainId) {
+      const newSupportedTokens = getSupportedTokensForChain(chainId)
+      const nativeCurrency = Object.keys(newSupportedTokens)[0]
+
+      // Only update if the native currency is different from current selection
+      // or if the current selection is not available in the new chain
+      const currentToken = form.getValues('tokenOffered')
+      if (
+        !newSupportedTokens[currentToken] ||
+        currentToken !== nativeCurrency
+      ) {
+        form.setValue('tokenOffered', nativeCurrency)
+      }
+    }
+  }, [chainId, form])
+
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true)
@@ -319,10 +337,7 @@ export default function CreateP2PListingPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cryptocurrency</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder='Select token' />
@@ -337,7 +352,8 @@ export default function CreateP2PListingPage() {
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      The cryptocurrency you want to {listingType}
+                      The cryptocurrency you want to {listingType} (native to
+                      current chain)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
