@@ -3,6 +3,8 @@
 > **OKX ETHCC Hackathon Submission** | Tracks: Smart Account UX & Abstraction +
 > DeFi, RWAs & Autonomous Apps
 
+[![Escrowzy Demo](public/images/escrowzy-demo.png)](https://youtu.be/ZJdJATkRHgg)
+
 ## 🚀 Executive Summary
 
 **Escrowzy** is the world's first gamified DeFi platform that transforms
