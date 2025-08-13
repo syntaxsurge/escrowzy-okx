@@ -17,6 +17,9 @@ export const apiEndpoints = {
     verifyEmail: '/api/auth/verify-email',
     resendVerification: '/api/auth/resend-verification'
   },
+  pusher: {
+    auth: '/api/pusher/auth'
+  },
   user: {
     profile: '/api/user',
     subscription: '/api/user/subscription',
