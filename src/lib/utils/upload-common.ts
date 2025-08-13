@@ -41,5 +41,13 @@ export function validateImageFile(
 }
 
 export function getUploadUrl(relativePath: string): string {
+  // If it's already a full URL (from Vercel Blob), return as-is
+  if (
+    relativePath.startsWith('http://') ||
+    relativePath.startsWith('https://')
+  ) {
+    return relativePath
+  }
+  // Otherwise, use the local API endpoint
   return apiEndpoints.uploads.getFile(relativePath)
 }

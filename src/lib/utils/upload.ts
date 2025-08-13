@@ -4,12 +4,16 @@ import crypto from 'crypto'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 
+import { put } from '@vercel/blob'
 import { fileTypeFromBuffer } from 'file-type'
 
 import type { UploadConfig, ProcessedFile } from './upload-common'
 
 export { validateImageFile, getUploadUrl } from './upload-common'
 export type { UploadConfig, ProcessedFile } from './upload-common'
+
+// Check if we're running on Vercel
+const isVercel = process.env.VERCEL === '1'
 
 export async function processUploadedFile(
   file: File,
@@ -38,20 +42,42 @@ export async function processUploadedFile(
   }
 
   const relativePath = path.join(...pathSegments, safeFilename)
-  const uploadsRoot = path.join(process.cwd(), 'uploads', ...pathSegments)
-  const absolutePath = path.join(uploadsRoot, safeFilename)
 
-  await mkdir(uploadsRoot, { recursive: true })
-  await writeFile(absolutePath, buffer)
+  if (isVercel && process.env.BLOB_READ_WRITE_TOKEN) {
+    // Use Vercel Blob storage in production
+    const blob = await put(relativePath, buffer, {
+      access: 'public',
+      contentType: detectedMimeType,
+      addRandomSuffix: false
+    })
 
-  return {
-    buffer,
-    filename: safeFilename,
-    originalName: file.name,
-    mimeType: detectedMimeType,
-    size: file.size,
-    extension: fileExt,
-    relativePath,
-    absolutePath
+    return {
+      buffer,
+      filename: safeFilename,
+      originalName: file.name,
+      mimeType: detectedMimeType,
+      size: file.size,
+      extension: fileExt,
+      relativePath: blob.url, // Store the blob URL as relativePath for consistency
+      absolutePath: blob.url // Also store as absolutePath for backward compatibility
+    }
+  } else {
+    // Use filesystem storage in development
+    const uploadsRoot = path.join(process.cwd(), 'uploads', ...pathSegments)
+    const absolutePath = path.join(uploadsRoot, safeFilename)
+
+    await mkdir(uploadsRoot, { recursive: true })
+    await writeFile(absolutePath, buffer)
+
+    return {
+      buffer,
+      filename: safeFilename,
+      originalName: file.name,
+      mimeType: detectedMimeType,
+      size: file.size,
+      extension: fileExt,
+      relativePath,
+      absolutePath
+    }
   }
 }

@@ -51,6 +51,7 @@
     "@types/request-ip": "^0.0.41",
     "@uiw/react-markdown-preview": "^5.1.5",
     "@uiw/react-md-editor": "^4.0.8",
+    "@vercel/blob": "^1.1.1",
     "autoprefixer": "^10.4.21",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.5.0",

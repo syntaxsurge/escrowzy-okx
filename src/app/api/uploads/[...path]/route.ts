@@ -29,6 +29,9 @@ export async function GET(
 
     const { path: pathArray } = await params
     const filePath = pathArray.join('/')
+
+    // Note: When using Vercel Blob storage, files are served directly from the Blob URL
+    // This route is only used for local filesystem storage
     const fullPath = path.join(process.cwd(), 'uploads', filePath)
 
     // Check if this is an avatar request
