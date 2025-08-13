@@ -347,11 +347,22 @@ export async function confirmTrade(
       return { success: false, error: 'Trade not found' }
     }
 
-    // Check if user is the seller (seller confirms they received payment)
-    if (trade.sellerId !== userId) {
-      return {
-        success: false,
-        error: 'Only seller can confirm payment receipt'
+    // Check if user has permission to confirm
+    // For domain trades: buyer confirms domain receipt
+    // For P2P trades: seller confirms payment receipt
+    if (trade.listingCategory === 'domain') {
+      if (trade.buyerId !== userId) {
+        return {
+          success: false,
+          error: 'Only buyer can confirm domain receipt'
+        }
+      }
+    } else {
+      if (trade.sellerId !== userId) {
+        return {
+          success: false,
+          error: 'Only seller can confirm payment receipt'
+        }
       }
     }
 

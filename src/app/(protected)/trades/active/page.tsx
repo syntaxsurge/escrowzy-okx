@@ -488,11 +488,20 @@ export default function ActiveTradesPage() {
                         }
                       }
                     }
-                    if (
-                      trade.status === 'payment_sent' &&
-                      trade.sellerId === user?.id
-                    ) {
-                      return 'Confirm payment received and release escrow'
+                    if (trade.status === 'payment_sent') {
+                      // For domain trades: buyer confirms domain receipt
+                      // For P2P trades: seller confirms payment receipt
+                      if (
+                        trade.listingCategory === 'domain' &&
+                        trade.buyerId === user?.id
+                      ) {
+                        return 'Confirm domain receipt and release payment to seller'
+                      } else if (
+                        trade.listingCategory !== 'domain' &&
+                        trade.sellerId === user?.id
+                      ) {
+                        return 'Confirm payment received and release escrow'
+                      }
                     }
                     if (
                       trade.status === 'delivered' &&

@@ -162,6 +162,18 @@ export function TradeTable({ trades, onUpdate }: TradeTableProps) {
                                 : 'Mark Payment Sent'}
                             </DropdownMenuItem>
                           )}
+                        {trade.status === 'payment_sent' &&
+                          ((trade.listingCategory === 'domain' && isBuyer) ||
+                            (trade.listingCategory !== 'domain' &&
+                              !isBuyer)) && (
+                            <DropdownMenuItem
+                              onClick={() => handleAction(trade, 'confirm')}
+                            >
+                              {trade.listingCategory === 'domain'
+                                ? 'Confirm Domain Receipt'
+                                : 'Confirm Payment Receipt'}
+                            </DropdownMenuItem>
+                          )}
                         {trade.status === 'delivered' && isBuyer && (
                           <DropdownMenuItem
                             onClick={() => handleAction(trade, 'confirm')}
@@ -169,7 +181,9 @@ export function TradeTable({ trades, onUpdate }: TradeTableProps) {
                             Confirm Receipt
                           </DropdownMenuItem>
                         )}
-                        {['funded', 'delivered'].includes(trade.status) && (
+                        {['funded', 'delivered', 'payment_sent'].includes(
+                          trade.status
+                        ) && (
                           <DropdownMenuItem
                             onClick={() => handleAction(trade, 'dispute')}
                             className='text-destructive'

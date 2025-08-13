@@ -190,14 +190,27 @@ export default function TradeDetailPage() {
       }
     }
 
-    if (trade.status === 'payment_sent' && isSeller) {
-      return {
-        action: 'confirm',
-        label: 'Confirm Payment & Release Crypto',
-        icon: <Shield className='h-5 w-5' />,
-        variant: 'default' as const,
-        className:
-          'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0'
+    if (trade.status === 'payment_sent') {
+      // For domain trades: buyer confirms domain receipt
+      // For P2P trades: seller confirms payment receipt
+      if (trade.listingCategory === 'domain' && isBuyer) {
+        return {
+          action: 'confirm',
+          label: 'Confirm Domain Receipt & Release Payment',
+          icon: <Shield className='h-5 w-5' />,
+          variant: 'default' as const,
+          className:
+            'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0'
+        }
+      } else if (trade.listingCategory !== 'domain' && isSeller) {
+        return {
+          action: 'confirm',
+          label: 'Confirm Payment & Release Crypto',
+          icon: <Shield className='h-5 w-5' />,
+          variant: 'default' as const,
+          className:
+            'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0'
+        }
       }
     }
 
