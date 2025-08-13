@@ -35,7 +35,8 @@ const CACHE_DURATION = {
 /**
  * Determine which base class to use based on environment
  */
-const BaseAPIClass = typeof window === 'undefined' ? OKXDexAPIServer : OKXDexAPIBrowser
+const BaseAPIClass =
+  typeof window === 'undefined' ? OKXDexAPIServer : OKXDexAPIBrowser
 
 /**
  * OKX DEX Client with helper methods and caching
