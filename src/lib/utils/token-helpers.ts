@@ -41,7 +41,8 @@ export async function getTokenDecimals(
     // Fetch token info from OKX
     const tokens = await okxDexClient.getAllTokens(chainId)
     const token = tokens.tokens.find(
-      t => t.tokenContractAddress.toLowerCase() === tokenAddress.toLowerCase()
+      (t: any) =>
+        t.tokenContractAddress.toLowerCase() === tokenAddress.toLowerCase()
     )
 
     if (token && token.tokenDecimals) {

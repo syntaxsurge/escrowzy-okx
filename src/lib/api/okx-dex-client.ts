@@ -21,9 +21,6 @@ import type {
   OKXRequestConfig
 } from '@/types/okx-dex'
 
-import { OKXDexAPIBrowser } from './okx-dex-api-browser'
-import { OKXDexAPIServer } from './okx-dex-api-server'
-
 // Cache configuration
 const CACHE_DURATION = {
   CHAINS: 3600, // 1 hour for chain data
@@ -33,16 +30,27 @@ const CACHE_DURATION = {
 } as const
 
 /**
- * Determine which base class to use based on environment
+ * Base class that will be extended
+ * We use a placeholder that matches the shape we need
  */
-const BaseAPIClass =
-  typeof window === 'undefined' ? OKXDexAPIServer : OKXDexAPIBrowser
+let BaseAPIClass: any
+
+// Only import the appropriate class based on environment
+if (typeof window === 'undefined') {
+  // Server-side: import the server version
+  const { OKXDexAPIServer } = require('./okx-dex-api-server')
+  BaseAPIClass = OKXDexAPIServer
+} else {
+  // Client-side: import the browser version
+  const { OKXDexAPIBrowser } = require('./okx-dex-api-browser')
+  BaseAPIClass = OKXDexAPIBrowser
+}
 
 /**
  * OKX DEX Client with helper methods and caching
  * Extends the appropriate base API class based on environment
  */
-export class OKXDexClient extends (BaseAPIClass as typeof OKXDexAPIServer) {
+export class OKXDexClient extends BaseAPIClass {
   private static instance: OKXDexClient | null = null
   private queueManager: OKXQueueManager | null = null
   private serverQueue: OKXServerQueue | null = null
@@ -119,7 +127,7 @@ export class OKXDexClient extends (BaseAPIClass as typeof OKXDexAPIServer) {
    */
   public async getCachedTokenList(chainId: string) {
     const getTokensWithCache = unstable_cache(
-      async () => this.getAllTokens(chainId).then(res => res.tokens),
+      async () => this.getAllTokens(chainId).then((res: any) => res.tokens),
       [`okx-tokens-${chainId}`],
       {
         revalidate: CACHE_DURATION.TOKENS,

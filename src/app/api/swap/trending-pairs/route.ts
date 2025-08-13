@@ -66,14 +66,14 @@ async function getTrendingPairs(chainIndex: string): Promise<TrendingPair[]> {
 
     for (const pair of pairs) {
       const fromToken = tokens.tokens?.find(
-        t =>
+        (t: any) =>
           t.tokenSymbol === pair.from ||
           t.tokenContractAddress?.toLowerCase() ===
             pair.fromAddress?.toLowerCase()
       )
 
       const toToken = tokens.tokens?.find(
-        t =>
+        (t: any) =>
           t.tokenSymbol === pair.to ||
           t.tokenContractAddress?.toLowerCase() ===
             pair.toAddress?.toLowerCase()

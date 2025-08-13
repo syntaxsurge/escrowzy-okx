@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // Ensure we have valid token data
     const validTokens = tokens.filter(
-      token =>
+      (token: any) =>
         token.tokenContractAddress && token.tokenSymbol && token.tokenName
     )
 
