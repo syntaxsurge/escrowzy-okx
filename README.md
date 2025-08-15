@@ -29,11 +29,6 @@ trust issues in P2P trading.
 - **Frictionless Onboarding**: Email login via Thirdweb - no seed phrases, no
   friction
 
-### 📺 Demo Video & Live Platform
-
-- 🎬 **[Watch Demo Video](https://youtu.be/xxxxxxx)**
-- 🌐 **[Try Live Platform](https://escrowzy-okx.vercel.app/)**
-
 ---
 
 ## 🏆 Track Alignment & Innovation Score
